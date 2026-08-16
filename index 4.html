@@ -1,0 +1,1869 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AG Payroll">
+<title>Action Group Payroll Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --black:#080808; --dark:#0d0d0d; --card:#121212; --card2:#171717;
+  --line:#272727; --line2:#333;
+  --red:#dc2626; --red-dark:#991b1b; --red-glow:rgba(220,38,38,.35);
+  --txt:#eaeaea; --muted:#8b8b8b; --dim:#5f5f5f;
+  --green:#16a34a; --amber:#d97706; --blue:#3b82f6;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--black);color:var(--txt);font-family:Inter,system-ui,sans-serif;-webkit-text-size-adjust:100%}
+body{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);min-height:100vh}
+#scan{position:fixed;inset:0;pointer-events:none;z-index:999;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.08) 2px,rgba(0,0,0,.08) 4px)}
+h1,h2,h3{font-family:Oswald,sans-serif;text-transform:uppercase;letter-spacing:.045em;font-weight:600}
+.bebas{font-family:'Bebas Neue',sans-serif;letter-spacing:.03em}
+.num{font-variant-numeric:tabular-nums}
+a{color:var(--red);text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit}
+input,select,textarea{font-family:inherit;font-size:16px;background:var(--dark);color:var(--txt);
+  border:1px solid var(--line2);border-radius:4px;padding:8px 10px;outline:none;width:100%}
+input:focus,select:focus,textarea:focus{border-color:var(--red);box-shadow:0 0 0 3px var(--red-glow)}
+input[type=checkbox]{width:auto}
+input[type=date]{color-scheme:dark}
+input[type=date]::-webkit-calendar-picker-indicator{filter:invert(1) brightness(1.6);opacity:.9;cursor:pointer}
+input[type=date]::-webkit-date-and-time-value{text-align:left}
+select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);
+  background-position:calc(100% - 15px) 52%,calc(100% - 10px) 52%;background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:30px}
+
+/* layout */
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+.hdr{background:linear-gradient(180deg,#0e0e0e,var(--black));border-bottom:1px solid var(--line);position:sticky;top:0;z-index:50;
+  padding-top:env(safe-area-inset-top)}
+.hdr-in{display:flex;align-items:center;gap:14px;padding:12px 0}
+.mark{width:34px;height:34px;border:2px solid var(--red);border-radius:50%;display:grid;place-items:center;
+  font-family:'Bebas Neue',sans-serif;font-size:15px;color:var(--red);flex:none;box-shadow:0 0 14px var(--red-glow)}
+
+/* ── HERO HEADER — matches the Action sales tracker ── */
+.hero{position:relative;padding:22px 0 20px;overflow:hidden}
+.hero-bg-text{position:absolute;top:-26px;left:-8px;font-family:'Bebas Neue',sans-serif;
+  font-size:180px;line-height:1;color:rgba(220,38,38,0.04);letter-spacing:-4px;
+  pointer-events:none;user-select:none;white-space:nowrap}
+.hero-in{position:relative;z-index:1;display:flex;align-items:flex-end;justify-content:space-between;gap:20px}
+.hero-left{display:flex;flex-direction:column;gap:4px;min-width:0}
+.hero-eyebrow{font-family:Oswald,sans-serif;font-size:11px;font-weight:500;letter-spacing:.25em;
+  color:var(--red);text-transform:uppercase;display:flex;align-items:center;gap:8px}
+.hero-eyebrow::before{content:'';display:inline-block;width:20px;height:2px;background:var(--red)}
+.hero-mark{display:flex;align-items:center;gap:14px;margin:8px 0 4px}
+.hero-badge{height:58px;width:auto;display:block;flex:none}
+.hero-word{font-family:'Bebas Neue',sans-serif;font-size:clamp(34px,6.5vw,58px);
+  line-height:.9;letter-spacing:2px;color:var(--text)}
+.hero-word em{font-style:normal;color:var(--red)}
+.hero-sub{font-size:12px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.hero-right{text-align:right;flex-shrink:0}
+.hero-right .d-label{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--faint,var(--dim));margin-bottom:4px}
+.hero-right .d-value{font-family:Oswald,sans-serif;font-size:15px;font-weight:600;color:var(--muted);letter-spacing:.05em}
+.live-dot{display:inline-flex;align-items:center;gap:6px}
+.live-dot::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--red);
+  box-shadow:0 0 10px var(--red);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+@media (prefers-reduced-motion:reduce){.live-dot::before{animation:none}}
+@media(max-width:620px){
+  .hero-bg-text{font-size:110px;top:-14px}
+  .hero-in{flex-direction:column;align-items:flex-start;gap:12px}
+  .hero-right{text-align:left}
+  .hero-badge{height:44px}
+  .hero-mark{gap:10px}
+}
+.hdr h1{font-size:17px}
+.hdr .sub{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.16em;font-family:Oswald,sans-serif}
+.spacer{flex:1}
+.nav{display:flex;gap:2px;overflow-x:auto;border-bottom:1px solid var(--line);scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav button{font-family:Oswald,sans-serif;text-transform:uppercase;letter-spacing:.1em;font-size:12px;font-weight:500;
+  padding:12px 14px;color:var(--muted);border-bottom:2px solid transparent;white-space:nowrap}
+.nav button.on{color:#fff;border-bottom-color:var(--red)}
+main{padding:22px 0 80px}
+
+/* pieces */
+.card{background:var(--card);border:1px solid var(--line);border-radius:6px;margin-bottom:16px;overflow:hidden}
+.card>.head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--card2)}
+.card>.head h2,.card>.head h3{font-size:13px}
+.card .body{padding:16px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.grow{flex:1;min-width:130px}
+.lbl{display:block;font-family:Oswald,sans-serif;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:5px}
+.btn{background:var(--red);color:#fff;font-family:Oswald,sans-serif;text-transform:uppercase;letter-spacing:.1em;
+  font-size:12px;font-weight:600;padding:10px 16px;border-radius:4px}
+.btn:hover{background:var(--red-dark)}
+.btn.ghost{background:transparent;border:1px solid var(--line2);color:var(--txt)}
+.btn.ghost:hover{border-color:var(--red);color:#fff}
+.btn.sm{padding:6px 11px;font-size:11px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.link{color:var(--red);font-size:12px;font-weight:600;text-decoration:underline;font-family:Oswald,sans-serif;letter-spacing:.06em;text-transform:uppercase}
+.link.mut{color:var(--muted)}
+.tag{display:inline-block;font-family:Oswald,sans-serif;font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  padding:3px 8px;border-radius:3px;background:#1e1e1e;color:var(--muted);border:1px solid var(--line2)}
+.tag.red{background:rgba(220,38,38,.14);color:#f87171;border-color:rgba(220,38,38,.4)}
+.tag.grn{background:rgba(22,163,74,.14);color:#4ade80;border-color:rgba(22,163,74,.4)}
+.tag.amb{background:rgba(217,119,6,.14);color:#fbbf24;border-color:rgba(217,119,6,.4)}
+.tag.blu{background:rgba(59,130,246,.14);color:#93c5fd;border-color:rgba(59,130,246,.4)}
+.muted{color:var(--muted)}.dim{color:var(--dim)}.red{color:#f87171}.grn{color:#4ade80}.amb{color:#fbbf24}
+.tiny{font-size:11px}.small{font-size:12.5px}
+.big{font-family:'Bebas Neue',sans-serif;font-size:30px;line-height:1}
+.mid{font-family:'Bebas Neue',sans-serif;font-size:21px;line-height:1}
+hr{border:0;border-top:1px solid var(--line);margin:12px 0}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-family:Oswald,sans-serif;font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--dim);
+  text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);font-weight:500;white-space:nowrap}
+td{padding:9px 10px;border-bottom:1px solid #1c1c1c;vertical-align:middle}
+tr:last-child td{border-bottom:0}
+.r{text-align:right}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+.stat{padding:14px 16px;border-right:1px solid var(--line);flex:1;min-width:150px}
+.stat:last-child{border-right:0}
+.stat .k{font-family:Oswald,sans-serif;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.stat .v{font-family:'Bebas Neue',sans-serif;font-size:27px;line-height:1.15}
+.stats{display:flex;flex-wrap:wrap}
+
+.jobcard{border:1px solid var(--line);border-radius:5px;margin-bottom:10px;background:var(--dark)}
+.jobcard.hold{border-color:rgba(217,119,6,.45)}
+.jobcard .top{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px}
+.jobcard .meta{display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding:0 12px 12px}
+.chk{display:flex;align-items:center;gap:7px;font-size:12.5px;cursor:pointer;user-select:none}
+.findbox{position:absolute;z-index:40;left:0;right:0;margin-top:2px;background:var(--card2);
+  border:1px solid var(--line2);border-radius:5px;box-shadow:0 12px 30px rgba(0,0,0,.6);overflow:hidden}
+.findrow{display:grid;grid-template-columns:auto 1fr auto;gap:4px 10px;padding:8px 11px;
+  cursor:pointer;border-bottom:1px solid var(--line2);font-size:13px;align-items:baseline}
+.findrow:last-child{border-bottom:none}
+.findrow:hover{background:var(--red3,rgba(220,38,38,.12))}
+.findrow .fi{font-family:Oswald,sans-serif;color:var(--red);letter-spacing:.05em}
+.findrow .fc{font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.findrow .fs{font-weight:600}
+.findrow .fd{grid-column:2/4;font-size:11px}
+.chk .box{width:18px;height:18px;min-width:18px;max-width:18px;padding:0;
+  border:1px solid var(--line2);border-radius:3px;display:grid;place-items:center;flex:none}
+.chk input:checked+.box,.chk .box.on{background:var(--red);border-color:var(--red)}
+.chk .box.on:after{content:"";width:5px;height:9px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.brk{background:#0a0a0a;border-top:1px solid var(--line);padding:12px 14px}
+.brk .l{display:flex;justify-content:space-between;padding:3px 0;font-size:12.5px}
+.brk .l.b{border-top:1px solid var(--line);margin-top:5px;padding-top:7px;font-weight:600}
+
+.tier{display:flex;gap:5px;flex-wrap:wrap}
+.tier button{border:1px solid var(--line2);border-radius:4px;padding:5px 9px;font-size:11px;color:var(--muted);background:var(--dark)}
+.tier button.on{background:var(--red);border-color:var(--red);color:#fff}
+.tier button b{font-family:Oswald,sans-serif;font-size:12px}
+
+.node{display:inline-flex;flex-direction:column;align-items:center}
+.box{border:1px solid var(--line2);background:var(--card2);border-radius:5px;padding:8px 12px;min-width:150px;text-align:center}
+.box.hd{border-color:var(--red);box-shadow:0 0 16px rgba(220,38,38,.18)}
+.box .n{font-family:Oswald,sans-serif;font-size:13px;font-weight:600}
+.box .r{font-size:10.5px;color:var(--dim);text-transform:uppercase;letter-spacing:.09em;text-align:center}
+.vline{width:1px;height:16px;background:var(--line2)}
+.kids{display:flex;align-items:flex-start}
+.kid{display:flex;flex-direction:column;align-items:center;padding:0 7px}
+.hline{height:1px;background:var(--line2);width:100%}
+.pod{border:1px dashed rgba(220,38,38,.5);border-radius:6px;padding:16px 10px 10px;position:relative;margin:6px}
+.pod>.cap{position:absolute;top:-8px;left:10px;background:var(--card);padding:0 6px;font-family:Oswald,sans-serif;
+  font-size:9px;letter-spacing:.16em;color:var(--red);text-transform:uppercase}
+
+.gate{min-height:100vh;display:grid;place-items:center;padding:24px}
+.gate .card{width:100%;max-width:390px;margin:0}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--card2);border:1px solid var(--red);
+  border-radius:5px;padding:11px 18px;font-size:13px;z-index:200;max-width:90vw;box-shadow:0 8px 30px #000}
+.banner{padding:11px 14px;border-radius:5px;font-size:13px;margin-bottom:14px;border:1px solid}
+.banner.warn{background:rgba(217,119,6,.1);border-color:rgba(217,119,6,.45);color:#fbbf24}
+.banner.err{background:rgba(220,38,38,.1);border-color:rgba(220,38,38,.45);color:#f87171}
+.banner.ok{background:rgba(22,163,74,.1);border-color:rgba(22,163,74,.45);color:#4ade80}
+
+@media(max-width:720px){
+  .jobcard .top{grid-template-columns:1fr}
+  .stat{border-right:0;border-bottom:1px solid var(--line);min-width:100%}
+  .stats .stat:last-child{border-bottom:0}
+  .hdr h1{font-size:14px}
+  th,td{padding:8px 7px;font-size:12px}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="scan"></div>
+<div id="app"><div class="gate"><div class="muted">Loading…</div></div></div>
+
+<script type="module">
+/* ============================================================================
+   ACTION GROUP PAYROLL TRACKER
+   Standalone. Its own Firebase project — deliberately NOT the sales tracker DB.
+
+   SETUP
+   1. Firebase console → new project → Realtime Database → Authentication →
+      enable Email/Password.
+   2. Paste that project's web config into FIREBASE_CONFIG below.
+   3. Open the page. The first screen creates the admin account.
+   4. Paste the security rules from SETUP.md into Realtime Database → Rules.
+   ========================================================================== */
+
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyD-PT33ibAPNZyrcm4vb444ri4WKjHc1hQ",
+  authDomain: "payroll-tracker-2d55b.firebaseapp.com",
+  databaseURL: "https://payroll-tracker-2d55b-default-rtdb.firebaseio.com",
+  projectId: "payroll-tracker-2d55b",
+  storageBucket: "payroll-tracker-2d55b.firebasestorage.app",
+  messagingSenderId: "792160300091",
+  appId: "1:792160300091:web:dda60396e87c69b3a4c01e"
+};
+
+/* ==========================================================================
+   WHO CAN GET IN
+
+   Logins live in Firebase under `logins`, and you manage them from the
+   Admin tab inside the tracker. Changes take effect for everyone right away.
+
+   The list below is only a seed: if `logins` is empty in the database the
+   first time the page loads, these get written in so you can get in. After
+   that it's ignored — edit people in the Admin tab, not here.
+   ========================================================================== */
+const SEED_ADMIN_CODE = "action2026";
+const SEED_LOGINS = [
+  { user: "will", pass: "changeme1", name: "Will Grainger", admin: true },
+];
+
+/* Live values, filled from the database. */
+const logins = () => list(D.logins);
+const adminCode = () => obj(D.settings).adminCode || SEED_ADMIN_CODE;
+
+/* ---------- business rules ---------- */
+const PARTS_RATE    = 0.10;   // taken off the top before any commission
+const INSTALL_RATE  = 0.08;   // the install pot — same base as the sales commission
+const START_DATE    = "2026-08-01";  // weeks auto-generate from the Monday of this week
+const REVIEWS_TARGET = 7, TURNOVERS_TARGET = 5, MAX_TECHS_PER_POD = 4;
+
+const FINANCING_FEES = { "Synchrony 18M 0%": 0.0425, "Synchrony 88M 7.99%": 0.0394 };
+const PAYMENT_TYPES = ["Card","Check","ACH","Cash","Synchrony 18M 0%","Synchrony 88M 7.99%","Goodleap","Sunlight"];
+
+const TECH_TIERS = [{r:.05,l:"Meeting minimum KPIs"},{r:.04,l:"Partial KPI failure"},{r:.03,l:"KPI failure"}];
+const SUP_TIERS  = [{r:.06,l:"Elite"},{r:.05,l:"Standard of excellence"},{r:.04,l:"Meeting minimum"},{r:.03,l:"KPI failure"}];
+const KPI_TARGETS = [{n:"Elite performance",rev:65000},{n:"Standard of excellence",rev:55000},{n:"Meeting minimum",rev:45000}];
+const MIN_REV = 45000;
+
+const ROLES = {
+  "Sales Manager":     {parent:null,              side:"sales"},
+  "Sales Supervisor":  {parent:"Sales Manager",   side:"sales"},
+  "Service Technician":{parent:"Sales Supervisor",side:"sales", requiresParent:true},
+  "Ops Manager":       {parent:null,              side:"ops"},
+  "Field Manager":     {parent:"Ops Manager",     side:"ops"},
+  "Plumbing Lead":     {parent:"Field Manager",   side:"ops"},
+  "Plumbing Helper":   {parent:"Plumbing Lead",   side:"ops"},
+  "HVAC Lead":         {parent:"Field Manager",   side:"ops"},
+  "HVAC Helper":       {parent:"HVAC Lead",       side:"ops"},
+  "Electrical Lead":   {parent:"Field Manager",   side:"ops"},
+  "Electrical Helper": {parent:"Electrical Lead", side:"ops"}
+};
+const ROLE_NAMES = Object.keys(ROLES);
+const INSTALL_ROLES = ROLE_NAMES.filter(r=>/Lead|Helper/.test(r));
+
+const ADJ_TYPES = ["Full chargeback","Partial refund","Credit"];
+const ADJ_STATUS = ["Open","Collected","Sent to collections"];
+
+/* ---------- firebase ---------- */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInAnonymously, onAuthStateChanged }
+         from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getDatabase, ref, onValue, update, set, remove, get, push }
+         from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const configured = !String(FIREBASE_CONFIG.apiKey).startsWith("PASTE");
+let app, auth, db;
+if (configured) { app = initializeApp(FIREBASE_CONFIG); auth = getAuth(app); db = getDatabase(app); }
+
+/* ---------- state ---------- */
+const D = { people:{}, postings:{}, jobs:{}, assignments:{}, costs:{}, adjustments:{},
+            kpi:{}, settings:{operatingPct:"40"}, users:{}, log:{} };
+const S = { view:"dashboard", weekId:null, user:null, me:null, ready:false,
+            openJob:{}, toast:"", err:"", moving:null, archives:null, showPast:false };
+
+/* ---------- small helpers ---------- */
+const $ = s => document.querySelector(s);
+const uid = () => Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4);
+const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt  = n => (Number(n)||0).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmt0 = n => (Number(n)||0).toLocaleString("en-US",{maximumFractionDigits:0});
+const obj  = o => o && typeof o === "object" ? o : {};
+const list = o => Object.entries(obj(o)).map(([id,v])=>({id,...v}));
+
+function money(raw){
+  if (typeof raw === "number") return {value:raw,error:null};
+  if (raw === null || raw === undefined || String(raw).trim()==="") return {value:0,error:null};
+  const t = String(raw).trim();
+  if (/[^0-9.,\-]/.test(t)) return {value:null,error:"Numbers only"};
+  const s = t.replace(/,/g,"");
+  if ((s.match(/\./g)||[]).length > 1) return {value:null,error:"Too many decimal points"};
+  if ((s.match(/-/g)||[]).length > 1 || (s.includes("-") && s.indexOf("-")!==0)) return {value:null,error:"Bad minus sign"};
+  const dec = s.split(".")[1];
+  if (dec && dec.length > 2) return {value:null,error:"Max 2 decimal places"};
+  const v = parseFloat(s);
+  return Number.isNaN(v) ? {value:null,error:"Not a valid amount"} : {value:v,error:null};
+}
+const num = raw => money(raw).value ?? 0;
+
+/* splits are rare — anything blank or unreadable means the full 100% */
+function splitPct(v){
+  if (v === null || v === undefined || String(v).trim()==="") return 100;
+  const n = parseFloat(v);
+  if (!Number.isFinite(n)) return 100;
+  return Math.min(100, Math.max(0, n));
+}
+
+/* ---------- dates ---------- */
+const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const iso = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const parseIso = s => { const [y,m,d] = String(s).split("-").map(Number); return new Date(y,(m||1)-1,d||1); };
+function mondayOf(x){
+  const d = typeof x === "string" ? parseIso(x) : new Date(x.getFullYear(),x.getMonth(),x.getDate());
+  d.setDate(d.getDate() - ((d.getDay()+6)%7));
+  return iso(d);
+}
+function addDays(isoStr,n){ const d = parseIso(isoStr); d.setDate(d.getDate()+n); return iso(d); }
+const todayIso = () => iso(new Date());
+const thisWeekId = () => mondayOf(new Date());
+
+/* A new job defaults to today. When you're filling in an older or future week,
+   it clamps to that week instead of landing outside it. */
+function defaultJobDate(weekStart){
+  const t = todayIso();
+  const lo = weekStart < START_DATE ? START_DATE : weekStart;
+  const hi = addDays(weekStart, 6);
+  return t < lo ? lo : t > hi ? hi : t;
+}
+
+/* A week IS its Monday. Nothing is stored, so two people can never create duplicates. */
+function weekMeta(id){
+  const s = parseIso(id), e = parseIso(addDays(id,6));
+  const label = `${s.getMonth()+1}.${s.getDate()} – ${e.getMonth()+1}.${e.getDate()}`;
+  const range = s.getMonth() === e.getMonth() && s.getFullYear() === e.getFullYear()
+    ? `${MONTHS[s.getMonth()]} ${s.getDate()} – ${e.getDate()}, ${e.getFullYear()}`
+    : `${MONTHS[s.getMonth()]} ${s.getDate()} – ${MONTHS[e.getMonth()]} ${e.getDate()}, ${e.getFullYear()}`;
+  return { id, start:id, end:addDays(id,6), label, range,
+           crossesMonth: s.getMonth() !== e.getMonth() };
+}
+function allWeeks(){
+  const out = [];
+  let cur = thisWeekId();
+  const first = mondayOf(START_DATE);
+  // include next week so upcoming jobs have somewhere to go
+  cur = addDays(cur, 7);
+  while (cur >= first) { out.push(weekMeta(cur)); cur = addDays(cur,-7); }
+  return out; // newest first
+}
+const weekIdOf = job => mondayOf(job.date || todayIso());
+
+/* ---------- org chart, resolved by date ---------- */
+const covers = (p,d) => p.from <= d && (!p.to || p.to >= d);
+const overlaps = (p,a,b) => p.from <= b && (!p.to || p.to >= a);
+const person = id => obj(D.people)[id] || null;
+const pname = id => person(id)?.name || "—";
+const postings = () => list(D.postings);
+const postingAt = (personId,date) => postings().find(p => p.personId===personId && covers(p,date)) || null;
+const peopleAt = (date,role) => postings().filter(p => covers(p,date) && (!role||p.role===role))
+                                  .filter(p => person(p.personId));
+const peopleDuring = (a,b,role) => postings().filter(p => overlaps(p,a,b) && (!role||p.role===role))
+                                     .filter(p => person(p.personId));
+
+function kpiFor(weekId,personId){
+  const k = obj(obj(D.kpi)[weekId])[personId] || {};
+  const isSup = (postingAt(personId, weekId)||{}).role === "Sales Supervisor";
+  return { rate: k.rate ?? (isSup ? .05 : .05), reviews: k.reviews ?? 0, turnovers: k.turnovers ?? 0 };
+}
+
+/* Pods for a week = anyone who held the posting at ANY point that week,
+   so people added or removed mid-week still show up and keep their jobs. */
+function podsForWeek(w){
+  return peopleDuring(w.start,w.end,"Sales Supervisor").map(sp => ({
+    sup: person(sp.personId), supId: sp.personId,
+    supRate: kpiFor(w.id, sp.personId).rate,
+    techs: peopleDuring(w.start,w.end,"Service Technician")
+             .filter(t => t.parentId === sp.personId)
+             .map(t => ({ id:t.personId, name:pname(t.personId), posting:t }))
+  }));
+}
+
+/* A job belongs to whoever the tech reported to ON THE DAY OF THE JOB. */
+function jobContext(job){
+  const date = job.date || todayIso();
+  const p = postingAt(job.techId, date);
+  const supId = p?.parentId || null;
+  return {
+    techId: job.techId, techName: pname(job.techId),
+    supId, supName: supId ? pname(supId) : null,
+    weekId: weekIdOf(job),
+    techRate: kpiFor(weekIdOf(job), job.techId).rate,
+    supRate: supId ? kpiFor(weekIdOf(job), supId).rate : 0,
+    orphan: !supId
+  };
+}
+
+/* ---------- the money ---------- */
+function jobMath(job, techRate, supRate){
+  const sold = num(job.sold), collected = num(job.collected);
+  const paidInFull = sold > 0 && collected >= sold;
+  const payable = !!job.isComplete && paidInFull;
+  const fee = sold * (FINANCING_FEES[job.paymentType] || 0);
+  const partsDed = sold * PARTS_RATE;
+  const commissionable = sold - fee - partsDed;
+  const pct = splitPct(job.split);
+  const afterSplit = commissionable * (pct/100);
+  const techBase = payable ? afterSplit * techRate : 0;
+  // One base for every 8% of install pay, whoever earns it.
+  const installPot = afterSplit * INSTALL_RATE;
+  const techInstall = payable && job.isSelfPerformed ? installPot : 0;
+  const supPay = payable ? commissionable * (supRate||0) : 0;
+  return { sold, collected, paidInFull, payable, fee, partsDed, commissionable, pct, afterSplit,
+           techBase, techInstall, techPay: techBase + techInstall, supPay, installPot };
+}
+function installMath(job, a, m){
+  const share = Math.min(100, Math.max(0, parseFloat(a.split)||0));
+  const commission = m.payable && a.payType !== "Hourly" ? m.installPot * (share/100) : 0;
+  const hourly = a.payType === "Hourly" ? (parseFloat(a.hours)||0) * (parseFloat(a.hourlyRate)||0) : 0;
+  return { share, pay: a.payType === "Hourly" ? hourly : commission, isHourly: a.payType === "Hourly" };
+}
+
+/* Adjustments: a chargeback or refund claws commission back off the job it came from.
+   Open              → held, comes out of this week's pay
+   Sent to collections → gone for good, stays out
+   Collected          → we got the money, commission goes back to the crew  */
+function adjFactor(adj, job){
+  if (adj.type === "Full chargeback") return 1;
+  const sold = job ? num(job.sold) : 0;
+  if (adj.type === "Partial refund") return sold > 0 ? Math.min(1, num(adj.amount)/sold) : 0;
+  return 0; // Credit is handled as a straight positive amount
+}
+function adjEffects(adj){
+  // → [{personId, name, role, amount}] where amount is negative for money taken back
+  const job = adj.jobId ? obj(D.jobs)[adj.jobId] : null;
+  if (adj.type === "Credit"){
+    return list(obj(adj.entries)).map(e => ({ personId:e.personId, name:pname(e.personId),
+      role:e.role||"", amount: Math.abs(num(e.amount)) }));
+  }
+  if (!job) {
+    return list(obj(adj.entries)).map(e => ({ personId:e.personId, name:pname(e.personId),
+      role:e.role||"", amount: -Math.abs(num(e.amount)) }));
+  }
+  const ctx = jobContext(job);
+  const m = jobMath(job, ctx.techRate, ctx.supRate);
+  const f = adjFactor(adj, job);
+  const out = [];
+  if (job.techId) out.push({personId:job.techId,name:ctx.techName,role:"Technician",amount:-(m.techPay*f)});
+  if (ctx.supId)  out.push({personId:ctx.supId,name:ctx.supName,role:"Supervisor",amount:-(m.supPay*f)});
+  if (!job.isSelfPerformed) list(obj(D.assignments)[job.id]).forEach(a=>{
+    const im = installMath(job,a,m);
+    if (!im.isHourly && im.pay > 0)
+      out.push({personId:a.personId,name:pname(a.personId),role:"Installer",amount:-(im.pay*f)});
+  });
+  // manual overrides
+  const over = obj(adj.overrides);
+  return out.map(e => over[e.personId] !== undefined && String(over[e.personId]).trim() !== ""
+    ? {...e, amount: -Math.abs(num(over[e.personId]))} : e);
+}
+const adjApplies = adj => adj.status === "Open" || adj.status === "Sent to collections";
+
+/* ---------- payroll ---------- */
+function weekJobs(weekId){ return list(D.jobs).filter(j => weekIdOf(j) === weekId); }
+
+function payrollFor(weekId){
+  const map = new Map();
+  const bump = (id,name,field,amt) => {
+    if (!id) return;
+    const row = map.get(id) || {id,name,sales:0,supervisor:0,install:0,adjustments:0};
+    row[field] += amt; row.name = name || row.name; map.set(id,row);
+  };
+  weekJobs(weekId).forEach(job => {
+    const ctx = jobContext(job);
+    const m = jobMath(job, ctx.techRate, ctx.supRate);
+    bump(job.techId, ctx.techName, "sales", m.techBase);
+    if (m.techInstall) bump(job.techId, ctx.techName, "install", m.techInstall);
+    if (ctx.supId) bump(ctx.supId, ctx.supName, "supervisor", m.supPay);
+    if (!job.isSelfPerformed) list(obj(D.assignments)[job.id]).forEach(a => {
+      const im = installMath(job,a,m);
+      if (a.personId && im.pay) bump(a.personId, pname(a.personId), "install", im.pay);
+    });
+  });
+  list(D.adjustments).filter(a => a.weekId === weekId && adjApplies(a))
+    .forEach(a => adjEffects(a).forEach(e => bump(e.personId, e.name, "adjustments", e.amount)));
+  return [...map.values()].map(r => ({...r, net: r.sales+r.supervisor+r.install+r.adjustments}))
+                          .sort((a,b)=>b.net-a.net);
+}
+
+function rollup(jobs){
+  let sold=0, commissions=0, labor=0, parts=0;
+  jobs.forEach(job => {
+    const ctx = jobContext(job);
+    const m = jobMath(job, ctx.techRate, ctx.supRate);
+    sold += m.sold;
+    commissions += m.techPay + m.supPay;
+    if (!job.isSelfPerformed) list(obj(D.assignments)[job.id]).forEach(a => { labor += installMath(job,a,m).pay; });
+    const c = obj(D.costs)[job.id] || {};
+    parts += num(c.parts) + num(c.extraLabor);
+  });
+  const pct = (parseFloat(D.settings.operatingPct)||0)/100;
+  return { sold, commissions, labor, parts, margin: sold - commissions - labor - parts - sold*pct };
+}
+
+/* ---------- writes (per-path, so two people editing never wipe each other) ---------- */
+function put(path, value){ if (!db) return; set(ref(db,path), value).catch(e=>toast(e.message)); }
+function patch(path, value){ if (!db) return; update(ref(db,path), value).catch(e=>toast(e.message)); }
+function drop(path){ if (!db) return; remove(ref(db,path)).catch(e=>toast(e.message)); }
+function logIt(text){
+  if (!db) return;
+  const id = uid();
+  set(ref(db,"log/"+id), { t: Date.now(), who: S.me?.name || "Someone", text })
+    .catch(()=>{});
+}
+function toast(msg){ S.toast = msg; render(); clearTimeout(toast._t); toast._t = setTimeout(()=>{S.toast="";render();},3600); }
+
+/* debounced field writes so typing doesn't hammer the DB */
+const pending = {};
+function writeField(path, value){
+  pending[path] = value;
+  clearTimeout(writeField["t"+path]);
+  writeField["t"+path] = setTimeout(()=>{ put(path, value); delete pending[path]; }, 450);
+  applyLocal(path, value);
+}
+function applyLocal(path, value){
+  const parts = path.split("/");
+  let node = D;
+  for (let i=0;i<parts.length-1;i++){ node[parts[i]] = node[parts[i]] || {}; node = node[parts[i]]; }
+  node[parts[parts.length-1]] = value;
+}
+
+/* ---------- render plumbing: keep focus and caret through re-renders ---------- */
+let renderQueued = false;
+function render(){
+  if (renderQueued) return;
+  renderQueued = true;
+  requestAnimationFrame(()=>{ renderQueued = false; paint(); });
+}
+function paint(){
+  const el = document.activeElement;
+  const key = el && el.getAttribute ? el.getAttribute("data-k") : null;
+  const selS = el && el.selectionStart, selE = el && el.selectionEnd;
+  $("#app").innerHTML = view();
+  if (key){
+    const back = document.querySelector(`[data-k="${CSS.escape(key)}"]`);
+    if (back){
+      back.focus({preventScroll:true});
+      try { if (selS !== null && selS !== undefined && back.setSelectionRange) back.setSelectionRange(selS,selE); } catch(e){}
+    }
+  }
+}
+
+/* ============================ VIEWS ============================ */
+
+function view(){
+  if (!configured) return setupNeeded();
+  if (!S.ready) return shell(`<div class="gate"><div class="muted">Connecting…</div></div>`, true);
+  if (!S.me) return loginGate();
+
+  const body =
+    S.view === "dashboard" ? vDashboard() :
+    S.view === "week"      ? vWeek() :
+    S.view === "install"   ? vInstall() :
+    S.view === "adjust"    ? vAdjust() :
+    S.view === "payroll"   ? vPayroll() :
+    S.view === "reports"   ? vReports() :
+    S.view === "org"       ? vOrg() :
+    S.view === "archives"  ? vArchives() :
+    S.view === "admin"     ? vAdmin() : "";
+  return shell(`<main><div class="wrap">${banner()}${body}</div></main>`);
+}
+
+function shell(inner, bare){
+  const tabs = [["dashboard","Dashboard"],["week","Week"],["install","Installation"],
+                ["adjust","Chargebacks"],["payroll","Payroll"],["reports","Reports"],
+                ["org","Org chart"],["archives","Archives"]];
+  if (S.me?.role === "admin") tabs.push(["admin","Admin"]);
+  const hdr = bare ? "" : `
+  <div class="hdr"><div class="wrap">
+    <div class="hero">
+      <div class="hero-bg-text">ACTION</div>
+      <div class="hero-in">
+        <div class="hero-left">
+          <div class="hero-eyebrow"><span class="live-dot">Live</span></div>
+          <div class="hero-mark">
+            <img src="ag-logo.png" alt="" class="hero-badge"
+                 onerror="this.style.display='none';this.nextElementSibling.style.display='grid'">
+            <div class="mark" style="display:none">AG</div>
+            <div class="hero-word">ACTION <em>PAYROLL</em></div>
+          </div>
+          <div class="hero-sub">Commission &amp; Payroll Tracker</div>
+        </div>
+        <div class="hero-right">
+          <div class="d-label">Pay period</div>
+          <div class="d-value">${esc(weekMeta(S.weekId||thisWeekId()).range)}</div>
+          <div class="tiny muted" style="margin-top:10px">${esc(S.me?.name||"")}</div>
+          <div>
+            ${S.me?.role === "admin" ? "" :
+              `<button class="link mut" onclick="A.unlock()">Admin</button>`}
+            <button class="link mut" onclick="A.logout()">Sign out</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="nav">${tabs.map(([k,l])=>
+      `<button class="${S.view===k?"on":""}" onclick="A.go('${k}')">${l}</button>`).join("")}</div>
+  </div></div>`;
+  return hdr + inner + (S.toast ? `<div class="toast">${esc(S.toast)}</div>` : "");
+}
+
+function banner(){
+  if (!S.err) return "";
+  return `<div class="banner err">${esc(S.err)}</div>`;
+}
+
+function setupNeeded(){
+  return `<div class="gate"><div class="card"><div class="body">
+    <div class="mark" style="margin-bottom:14px">AG</div>
+    <h2>Firebase isn't connected yet</h2>
+    <p class="small muted" style="margin:12px 0 8px">Open this file and paste your <b>new</b> Firebase project's
+    web config into <code>FIREBASE_CONFIG</code> near the top. Keep it separate from the sales tracker project —
+    nothing here reads or writes that database.</p>
+    <p class="small dim">Then enable Email/Password under Authentication and paste the rules from SETUP.md.</p>
+  </div></div></div>`;
+}
+
+/* ---------- login ---------- */
+function loginGate(){
+  return `<div class="gate"><div class="card"><div class="body">
+    <img src="ag-logo.png" alt="The Action Group" style="height:88px;display:block;margin:0 auto 18px"
+         onerror="this.style.display='none'">
+    <div class="hero-eyebrow" style="justify-content:center;margin-bottom:6px">Action Payroll</div>
+    <h2 style="font-size:20px;text-align:center">Sign in</h2>
+    <p class="small muted" style="margin:8px 0 16px;text-align:center">Commission &amp; payroll tracker.</p>
+    ${S.err ? `<div class="banner err">${esc(S.err)}</div>` : ""}
+    <label class="lbl">Username</label>
+    <input id="li-user" data-k="li-user" autocomplete="username" autocapitalize="none"
+      spellcheck="false" style="margin-bottom:12px"
+      onkeydown="if(event.key==='Enter')A.login()">
+    <label class="lbl">Password</label>
+    <input id="li-pass" data-k="li-pass" type="password" autocomplete="current-password"
+      onkeydown="if(event.key==='Enter')A.login()">
+    <button class="btn" style="width:100%;margin-top:16px" onclick="A.login()">Sign in</button>
+  </div></div></div>`;
+}
+
+/* ---------- dashboard ---------- */
+function vDashboard(){
+  const weeks = allWeeks();
+  const now = new Date(), curY = now.getFullYear(), curM = now.getMonth()+1;
+  const live = rollup(weekJobs(thisWeekId()));
+  // Month and year count each job on its own date — a week that straddles a month
+  // stays whole for payroll, but the revenue lands in the month it happened.
+  const inY = j => Number(String(j.date||"").slice(0,4)) === curY;
+  const mtd = rollup(list(D.jobs).filter(j => inY(j) && Number(String(j.date||"").slice(5,7)) === curM));
+  const ytd = rollup(list(D.jobs).filter(inY));
+
+  const cols = [["This week",weekMeta(thisWeekId()).label,live],["Month to date",MONTHS[curM-1],mtd],["Year to date",String(curY),ytd]];
+  const rows = [["Total sold","sold"],["Commissions","commissions"],["Install labor","labor"],["Net margin","margin"]];
+
+  const probs = problems();
+  return `
+  ${probs.length ? `<div class="banner warn"><b>${probs.length} thing${probs.length>1?"s":""} to fix.</b>
+     ${probs.slice(0,4).map(p=>`<div class="tiny" style="margin-top:4px">• ${esc(p)}</div>`).join("")}
+     ${probs.length>4?`<div class="tiny dim" style="margin-top:4px">…and ${probs.length-4} more, listed on the week they belong to.</div>`:""}</div>` : ""}
+
+  <div class="card"><div class="scroll"><table>
+    <tr><th></th>${cols.map(c=>`<th class="r">${c[0]}<div class="dim" style="font-weight:400">${esc(c[1])}</div></th>`).join("")}</tr>
+    ${rows.map(([l,k])=>`<tr><td><b>${l}</b></td>${cols.map(c=>{
+      const v = c[2][k], neg = k==="margin" && v<0;
+      return `<td class="r num ${neg?"red":""}"><span class="${k==="margin"?"mid":""}">$${fmt0(v)}</span>${
+        k==="margin"&&c[2].sold>0?`<div class="tiny dim">${((v/c[2].sold)*100).toFixed(1)}%</div>`:""}</td>`;
+    }).join("")}</tr>`).join("")}
+  </table></div>
+  <div class="body tiny dim" style="border-top:1px solid var(--line)">
+    Net margin is revenue less commissions, install labor, parts and ${esc(D.settings.operatingPct||0)}% operating cost.
+    Weeks run Monday to Sunday and generate themselves back to ${esc(weekMeta(mondayOf(START_DATE)).range)}.
+  </div></div>
+
+  <div class="card"><div class="head"><h2>Weeks</h2><span class="tiny dim">Newest first</span></div>
+  <div class="scroll"><table>
+    <tr><th>Week</th><th>Dates</th><th class="r">Sold</th><th class="r">Payroll</th><th class="r">Net margin</th><th></th></tr>
+    ${weeks.slice(0,30).map(w=>{
+      const r = rollup(weekJobs(w.id));
+      const isNow = w.id === thisWeekId(), future = w.id > thisWeekId();
+      return `<tr style="cursor:pointer" onclick="A.openWeek('${w.id}')">
+        <td><b class="mid">${esc(w.label)}</b> ${isNow?'<span class="tag red">This week</span>':future?'<span class="tag">Upcoming</span>':""}
+          ${w.crossesMonth?'<span class="tag blu">Splits months</span>':""}</td>
+        <td class="tiny muted">${esc(w.range)}</td>
+        <td class="r num">$${fmt0(r.sold)}</td>
+        <td class="r num">$${fmt0(r.commissions + r.labor)}</td>
+        <td class="r num ${r.margin<0?"red":""}">$${fmt0(r.margin)}</td>
+        <td class="r dim">›</td></tr>`;
+    }).join("")}
+  </table></div></div>
+
+  <div class="card"><div class="head"><h3>Recent activity</h3></div><div class="body">
+    ${list(D.log).sort((a,b)=>b.t-a.t).slice(0,10).map(l=>
+      `<div class="small" style="padding:3px 0"><span class="dim">${esc(ago(l.t))}</span> — ${esc(l.text)}
+       <span class="dim">by ${esc(l.who)}</span></div>`).join("") || `<div class="small dim">Nothing yet.</div>`}
+  </div></div>`;
+}
+
+function ago(t){
+  if (!t) return "";
+  const s = Math.round((Date.now()-t)/1000);
+  if (s < 60) return "just now";
+  if (s < 3600) return Math.round(s/60)+" min ago";
+  if (s < 86400) return Math.round(s/3600)+" hr ago";
+  return new Date(t).toLocaleDateString();
+}
+
+function problems(){
+  const out = [];
+  list(D.jobs).forEach(j => {
+    const w = weekMeta(weekIdOf(j)).label;
+    const label = (j.customer||"").trim() || "Untitled job";
+    if (!(j.customer||"").trim()) out.push(`Job with no customer name (${w})`);
+    else if (!(j.invoice||"").trim()) out.push(`${label} (${w}) — no invoice number`);
+    if (money(j.sold).error) out.push(`${label} (${w}) — sale amount isn't a number`);
+    else if (num(j.sold) === 0) out.push(`${label} (${w}) — no sale amount`);
+    if (!j.date) out.push(`${label} — no date`);
+    const ctx = jobContext(j);
+    if (ctx.orphan) out.push(`${label} (${w}) — ${ctx.techName} had no supervisor on ${j.date}, so no supervisor commission is being paid`);
+  });
+  return out;
+}
+
+/* ---------- week ---------- */
+function weekPicker(){
+  const weeks = allWeeks();
+  const cur = S.weekId || thisWeekId();
+  return `<select data-k="wkpick" style="max-width:340px" onchange="A.openWeek(this.value)">
+    ${weeks.map(w=>`<option value="${w.id}" ${w.id===cur?"selected":""}>Week of ${esc(w.range)}${
+      w.id===thisWeekId()?" — this week":""}</option>`).join("")}</select>`;
+}
+
+function vWeek(){
+  const w = weekMeta(S.weekId || thisWeekId());
+  const pods = podsForWeek(w);
+  const jobs = weekJobs(w.id);
+  if (!Object.keys(obj(D.people)).length)
+    return `<div class="card"><div class="body"><h2>Build the org chart first</h2>
+      <p class="small muted" style="margin:10px 0">Weeks fill themselves from it. Add a sales manager, then supervisors,
+      then technicians under them.</p><button class="btn" onclick="A.go('org')">Open org chart</button></div></div>`;
+  return `<div class="card"><div class="head">${weekPicker()}
+    ${w.crossesMonth?`<span class="tag blu">This week splits two months — payroll stays whole, reporting counts each job on its own date</span>`:""}
+  </div></div>` +
+  (pods.length ? pods.map(p=>podCard(p,w,jobs)).join("")
+    : `<div class="card"><div class="body small muted">Nobody held a sales supervisor posting during ${esc(w.range)}.</div></div>`);
+}
+
+function podCard(pod,w,allJobs){
+  const teamRev = pod.techs.reduce((s,t)=> s + allJobs.filter(j=>j.techId===t.id).reduce((a,j)=>a+num(j.sold),0), 0);
+  const head = Math.max(1, pod.techs.length);
+  const avg = teamRev/head;
+  const tier = KPI_TARGETS.find(k=>avg>=k.rev);
+  const next = [...KPI_TARGETS].reverse().find(k=>avg<k.rev);
+  const supTotal = pod.techs.reduce((a,t)=> a + allJobs.filter(j=>j.techId===t.id)
+    .reduce((b,j)=> b + jobMath(j, kpiFor(w.id,t.id).rate, pod.supRate).supPay, 0), 0);
+
+  return `<div class="card">
+    <div class="head" style="display:block">
+      <div class="row" style="align-items:flex-start">
+        <div class="grow">
+          <div class="tiny dim">Sales supervisor · ${pod.techs.length} of ${MAX_TECHS_PER_POD} technicians
+            ${pod.techs.length>MAX_TECHS_PER_POD?'<span class="tag amb">Over pod limit</span>':""}</div>
+          <h2 style="font-size:16px">${esc(pod.sup?.name||"")}</h2>
+          <div class="small muted" style="margin-top:4px">Team $${fmt0(teamRev)} across ${head} —
+            average <b class="num">$${fmt0(avg)}</b> —
+            <span class="${tier?"grn":"red"}">${tier?esc(tier.n):"below minimum"}</span></div>
+          ${next?`<div class="tiny dim">$${fmt0(Math.max(0,next.rev*head-teamRev))} more to reach ${esc(next.n)}</div>`:""}
+        </div>
+        <div style="text-align:right">
+          <div class="tiny dim">Supervisor pay</div><div class="mid num">$${fmt(supTotal)}</div>
+        </div>
+      </div>
+      <div style="margin-top:10px">${tierPicker(SUP_TIERS,pod.supRate,w.id,pod.supId)}</div>
+    </div>
+    ${pod.techs.length ? pod.techs.map(t=>techBlock(t,pod,w,allJobs.filter(j=>j.techId===t.id))).join("")
+      : `<div class="body small muted">No technicians under ${esc(pod.sup?.name||"")} this week.</div>`}
+  </div>`;
+}
+
+function tierPicker(tiers,value,weekId,personId){
+  return `<div class="tier"><span class="tiny dim" style="align-self:center;margin-right:4px">KPI compliance</span>${
+    tiers.map(t=>`<button class="${Math.abs(value-t.r)<1e-9?"on":""}"
+      onclick="A.setKpi('${weekId}','${personId}','rate',${t.r})"><b>${(t.r*100).toFixed(0)}%</b> ${esc(t.l)}</button>`).join("")}</div>`;
+}
+
+function techBlock(tech,pod,w,jobs){
+  const k = kpiFor(w.id,tech.id);
+  const rev = jobs.reduce((s,j)=>s+num(j.sold),0);
+  const pay = jobs.reduce((s,j)=>s+jobMath(j,k.rate,pod.supRate).techPay,0);
+  const meets = rev>=MIN_REV && k.reviews>=REVIEWS_TARGET && k.turnovers>=TURNOVERS_TARGET;
+  return `<div style="border-top:1px solid var(--line)">
+    <div style="padding:12px 16px;background:var(--card2)">
+      <div class="row" style="align-items:flex-start">
+        <div class="grow">
+          <h3 style="font-size:14px">${esc(tech.name)}</h3>
+          <div class="row" style="gap:14px;margin-top:6px;align-items:center">
+            <span class="tiny"><span class="dim">Revenue</span>
+              <b class="num ${rev>=MIN_REV?"grn":"red"}"> $${fmt0(rev)}</b><span class="dim"> / $${fmt0(MIN_REV)}</span></span>
+            ${kpiNum("Reviews",k.reviews,REVIEWS_TARGET,w.id,tech.id,"reviews")}
+            ${kpiNum("Turnovers",k.turnovers,TURNOVERS_TARGET,w.id,tech.id,"turnovers")}
+            <span class="tag ${meets?"grn":"amb"}">${meets?"Meets minimum":"Below minimum"}</span>
+          </div>
+        </div>
+        <div style="text-align:right"><div class="tiny dim">Technician pay</div><div class="mid num">$${fmt(pay)}</div></div>
+      </div>
+      <div style="margin-top:10px">${tierPicker(TECH_TIERS,k.rate,w.id,tech.id)}</div>
+    </div>
+    ${jobs.map(j=>jobCard(j,k.rate,pod.supRate,pod)).join("")}
+    <button class="link" style="display:block;width:100%;padding:12px;text-align:center"
+      onclick="A.addJob('${tech.id}','${defaultJobDate(w.start)}')">+ Add job for ${esc(tech.name.split(" ")[0])}</button>
+  </div>`;
+}
+function kpiNum(label,value,target,weekId,personId,field){
+  return `<span class="tiny" style="display:inline-flex;align-items:center;gap:5px"><span class="dim">${label}</span>
+    <input data-k="kpi-${weekId}-${personId}-${field}" value="${value}" inputmode="numeric"
+      style="width:52px;padding:3px 6px;text-align:right" class="num ${value>=target?"grn":"red"}"
+      oninput="A.setKpi('${weekId}','${personId}','${field}',Number(this.value.replace(/[^0-9]/g,''))||0)">
+    <span class="dim">/ ${target}</span></span>`;
+}
+
+function jobCard(job,techRate,supRate,pod){
+  const m = jobMath(job,techRate,supRate);
+  const sErr = money(job.sold).error, cErr = money(job.collected).error;
+  const over = m.collected > m.sold && m.sold > 0;
+  const open = !!S.openJob[job.id];
+  const p = `jobs/${job.id}`;
+  const ctx = jobContext(job);
+  const movedWeek = weekIdOf(job) !== (S.weekId||thisWeekId());
+  return `<div class="jobcard ${m.payable?"":"hold"}" style="margin:10px 16px">
+    <div class="top">
+      <div><label class="lbl">Customer</label>
+        <input data-k="${p}-customer" value="${esc(job.customer||"")}" oninput="A.f('${p}/customer',this.value)"></div>
+      <div><label class="lbl">Invoice</label>
+        <input data-k="${p}-invoice" class="num" value="${esc(job.invoice||"")}" oninput="A.f('${p}/invoice',this.value)"></div>
+      <div><label class="lbl">Total sold</label>
+        <input data-k="${p}-sold" class="num" inputmode="decimal" value="${esc(job.sold||"")}"
+          style="${sErr?"border-color:var(--red)":""}" oninput="A.f('${p}/sold',this.value)">
+        ${sErr?`<div class="tiny red">${esc(sErr)}</div>`:""}</div>
+      <div><label class="lbl">Collected</label>
+        <input data-k="${p}-collected" class="num" inputmode="decimal" value="${esc(job.collected||"")}"
+          style="${cErr||over?"border-color:var(--red)":""}" oninput="A.f('${p}/collected',this.value)">
+        ${cErr?`<div class="tiny red">${esc(cErr)}</div>`:over?`<div class="tiny red">More than sold</div>`:""}</div>
+    </div>
+    <div class="meta">
+      <label style="width:auto"><span class="lbl">Date</span>
+        <input data-k="${p}-date" type="date" value="${esc(job.date||"")}" style="width:auto"
+          onchange="A.f('${p}/date',this.value)"></label>
+      <label style="width:auto"><span class="lbl">Payment</span>
+        <select data-k="${p}-pt" style="width:auto" onchange="A.f('${p}/paymentType',this.value)">
+          ${PAYMENT_TYPES.map(t=>`<option ${t===job.paymentType?"selected":""}>${esc(t)}</option>`).join("")}
+        </select></label>
+      <label style="width:auto"><span class="lbl">Split</span>
+        <input data-k="${p}-split" class="num" inputmode="decimal" style="width:64px;text-align:right"
+          value="${esc(job.split ?? "")}" placeholder="100" oninput="A.f('${p}/split',this.value)"></label>
+      ${chk(job.isComplete,"Job complete",`A.f('${p}/isComplete',${!job.isComplete})`)}
+      ${chk(job.isSelfPerformed,"Tech did the install",`A.f('${p}/isSelfPerformed',${!job.isSelfPerformed})`)}
+      <button class="link" onclick="A.toggleJob('${job.id}')">${open?"Hide":"Breakdown"}</button>
+      <button class="link mut" onclick="A.delJob('${job.id}')">Remove</button>
+      ${movedWeek?`<span class="tag amb">Moved to week of ${esc(weekMeta(weekIdOf(job)).label)}</span>`:""}
+      ${ctx.orphan?`<span class="tag red">No supervisor on this date</span>`:""}
+      ${!m.payable && m.sold>0 ? `<span class="tag amb">${job.isComplete?"Not paid in full":"Not complete"} — commission held</span>`:""}
+      <span class="spacer"></span>
+      <span class="tiny dim">Tech / Sup</span>
+      <b class="num ${m.payable?"":"dim"}">$${fmt(m.techPay)} / $${fmt(m.supPay)}</b>
+    </div>
+    ${open?`<div class="brk">
+      ${line("Total sold",m.sold)}
+      ${line(`Financing fee — ${job.paymentType||"—"}`,-m.fee,m.fee===0)}
+      ${line("Parts — 10%",-m.partsDed)}
+      ${line("Commissionable revenue",m.commissionable,false,true)}
+      ${m.pct!==100?line(`After ${m.pct}% split`,m.afterSplit):""}
+      <div class="tiny dim" style="margin:9px 0 3px;letter-spacing:.12em;text-transform:uppercase">Technician</div>
+      ${line(`Sale commission — ${(techRate*100).toFixed(0)}%`,m.techBase)}
+      ${job.isSelfPerformed?line("Install — 8%",m.techInstall):""}
+      ${line("Technician pay",m.techPay,false,true)}
+      <div class="tiny dim" style="margin:9px 0 3px;letter-spacing:.12em;text-transform:uppercase">Supervisor — ${esc(ctx.supName||"none")}</div>
+      ${line(`Sale commission — ${((supRate||0)*100).toFixed(0)}% of commissionable, split doesn't apply`,m.supPay)}
+      <div class="tiny dim" style="margin:9px 0 3px;letter-spacing:.12em;text-transform:uppercase">Install pot</div>
+      ${line("8% of the same base the tech's commission uses",m.installPot)}
+    </div>`:""}
+  </div>`;
+}
+function chk(on,label,call){
+  return `<span class="chk" onclick="${call}"><span class="box ${on?"on":""}"></span>${esc(label)}</span>`;
+}
+function line(l,v,muted,bold){
+  return `<div class="l ${bold?"b":""}"><span class="${muted?"dim":""}">${esc(l)}</span>
+    <span class="num ${muted?"dim":v<0?"red":""}">${v<0?"−":""}$${fmt(Math.abs(v))}</span></div>`;
+}
+
+/* ---------- installation ---------- */
+function vInstall(){
+  const w = weekMeta(S.weekId||thisWeekId());
+  const crew = INSTALL_ROLES.flatMap(r => peopleDuring(w.start,w.end,r)
+    .map(p=>({id:p.personId,name:pname(p.personId),role:r})));
+  const jobs = weekJobs(w.id);
+  const queue = jobs.filter(j=>!j.isSelfPerformed);
+  const self  = jobs.filter(j=>j.isSelfPerformed);
+  const total = queue.reduce((s,j)=>{
+    const ctx = jobContext(j), m = jobMath(j,ctx.techRate,ctx.supRate);
+    return s + list(obj(D.assignments)[j.id]).reduce((a,x)=>a+installMath(j,x,m).pay,0);
+  },0);
+
+  return `<div class="card"><div class="head">${weekPicker()}
+    <span class="spacer"></span><span class="tiny dim">Installation payroll</span>
+    <b class="mid num">$${fmt(total)}</b></div>
+    <div class="body tiny ${crew.length?"muted":"amb"}">${crew.length
+      ? "Crew on the chart this week: " + crew.map(c=>`${esc(c.name)} (${esc(c.role)})`).join(" · ")
+      : "No leads or helpers posted this week. Add them on the org chart."}</div></div>
+
+  ${self.length?`<div class="card"><div class="head"><h3>Tech did the install</h3></div><div class="body small muted">
+    ${self.map(j=>esc(j.customer||"Untitled job")).join(" · ")} — the selling tech takes the 8%, no installer needed.</div></div>`:""}
+
+  ${queue.length?queue.map(job=>{
+    const ctx = jobContext(job), m = jobMath(job,ctx.techRate,ctx.supRate);
+    const as = list(obj(D.assignments)[job.id]);
+    const comm = as.filter(a=>a.payType!=="Hourly");
+    const assigned = comm.reduce((s,a)=>s+(parseFloat(a.split)||0),0);
+    const gap = Math.round((100-assigned)*100)/100;
+    return `<div class="card">
+      <div class="head"><div class="grow"><h3>${esc(job.customer||"Untitled job")}</h3>
+        <div class="small muted num" style="margin-top:3px">Install pot — 8% of $${fmt(m.afterSplit)}:
+          <b class="grn">$${fmt(m.installPot)}</b></div></div>
+        ${!m.payable?`<span class="tag amb">${job.isComplete?"Not paid in full":"Not complete"} — commission held</span>`:""}</div>
+      <div class="scroll"><table>
+        <tr><th>Installer</th><th>Pay type</th><th>Share / hours</th><th class="r">Pay</th><th></th></tr>
+        ${as.map(a=>{
+          const im = installMath(job,a,m), pa = `assignments/${job.id}/${a.id}`;
+          return `<tr>
+            <td><select data-k="${pa}-p" onchange="A.f('${pa}/personId',this.value)">
+              <option value="">Choose…</option>
+              ${crew.map(c=>`<option value="${c.id}" ${c.id===a.personId?"selected":""}>${esc(c.name)} — ${esc(c.role)}</option>`).join("")}
+              ${a.personId && !crew.some(c=>c.id===a.personId)
+                ? `<option value="${a.personId}" selected>${esc(pname(a.personId))} — not posted this week</option>`:""}
+            </select></td>
+            <td><select data-k="${pa}-t" style="width:130px" onchange="A.f('${pa}/payType',this.value)">
+              <option ${a.payType!=="Hourly"?"selected":""}>Commission</option>
+              <option ${a.payType==="Hourly"?"selected":""}>Hourly</option></select></td>
+            <td>${a.payType==="Hourly"
+              ? `<div class="row" style="gap:6px"><input data-k="${pa}-h" class="num" style="width:70px" placeholder="hrs"
+                   value="${esc(a.hours||"")}" oninput="A.f('${pa}/hours',this.value)">
+                 <input data-k="${pa}-hr" class="num" style="width:80px" placeholder="rate"
+                   value="${esc(a.hourlyRate||"")}" oninput="A.f('${pa}/hourlyRate',this.value)"></div>`
+              : `<div class="row" style="gap:6px;align-items:center"><input data-k="${pa}-s" class="num" style="width:86px;text-align:right"
+                   value="${esc(a.split||"")}" oninput="A.f('${pa}/split',this.value)"><span class="dim">%</span></div>`}</td>
+            <td class="r num"><b>$${fmt(im.pay)}</b></td>
+            <td class="r"><button class="link mut" onclick="A.delAssign('${job.id}','${a.id}')">Remove</button></td>
+          </tr>`;
+        }).join("")}
+      </table></div>
+      <div class="body row" style="align-items:center">
+        <button class="link" onclick="A.addAssign('${job.id}')">+ Add installer</button>
+        ${comm.length? (Math.abs(gap)<0.005
+          ? `<span class="tag grn">Fully assigned — all $${fmt(m.installPot)} allocated</span>`
+          : `<span class="tag ${gap>0?"amb":"red"}">${gap>0
+              ? `${gap}% unassigned — $${fmt(m.installPot*gap/100)} isn't going to anyone`
+              : `Over by ${Math.abs(gap)}% — $${fmt(m.installPot*Math.abs(gap)/100)} more than the pot`}</span>
+             <button class="link" onclick="A.splitEven('${job.id}')">Split evenly</button>`) : ""}
+      </div></div>`;
+  }).join("") : `<div class="card"><div class="body small muted">No jobs need an installer this week.</div></div>`}`;
+}
+
+/* ---------- chargebacks ---------- */
+function vAdjust(){
+  const w = weekMeta(S.weekId||thisWeekId());
+  const all = list(D.adjustments);
+  const openOnes = all.filter(a=>a.status==="Open").sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+  const closed = all.filter(a=>a.status!=="Open" && a.weekId===w.id);
+  const impact = payrollFor(w.id).filter(r=>r.adjustments!==0);
+
+  return `<div class="card"><div class="head">${weekPicker()}
+    <span class="tiny dim">Open items stay here until they're collected or written off — whatever week they started in.</span></div>
+    <div class="body">
+      <div class="row">
+        <div class="grow" style="min-width:220px;position:relative">
+          <label class="lbl">Job — search by job number</label>
+          <input data-k="nadj-find" id="nadj-find" autocomplete="off" spellcheck="false"
+            placeholder="Invoice number, customer, or tech"
+            value="${esc(S.adjPick ? jobLabelFor(S.adjPick) : (S.adjFind||""))}"
+            oninput="A.findJob(this.value)">
+          ${S.adjPick
+            ? `<button class="link mut" style="position:absolute;right:8px;top:26px"
+                 onclick="A.clearJob()">Clear</button>`
+            : ""}
+          ${jobFindResults()}
+          <div class="tiny dim" style="margin-top:5px">
+            ${S.adjPick ? "Linked — commission is worked out from this job."
+                        : "Leave blank to enter a chargeback by hand."}</div>
+        </div>
+        <div style="width:170px"><label class="lbl">Type</label>
+          <select data-k="nadj-type" id="nadj-type">${ADJ_TYPES.map(t=>`<option>${t}</option>`).join("")}</select></div>
+        <div style="width:130px"><label class="lbl">Amount</label>
+          <input data-k="nadj-amt" id="nadj-amt" class="num" inputmode="decimal" placeholder="Refund / credit $"></div>
+        <div style="width:150px"><label class="lbl">Date</label>
+          <input data-k="nadj-date" id="nadj-date" type="date" value="${todayIso()}"></div>
+        <div class="grow"><label class="lbl">Reason</label><input data-k="nadj-why" id="nadj-why"></div>
+        <button class="btn" onclick="A.addAdj()">Add</button>
+      </div>
+      <div class="tiny dim" style="margin-top:8px">Full chargeback takes back all commission on the job.
+      Partial refund takes back the same share of commission as the refund is of the sale. Credit pays money back out.</div>
+    </div></div>
+
+  ${impact.length?`<div class="card"><div class="head"><h3>Hitting the week of ${esc(w.label)}</h3></div>
+    <div class="scroll"><table><tr><th>Person</th><th class="r">Adjustment</th><th class="r">Net pay this week</th></tr>
+    ${impact.map(r=>`<tr><td><b>${esc(r.name)}</b></td>
+      <td class="r num ${r.adjustments<0?"red":"grn"}">${r.adjustments<0?"−":"+"}$${fmt(Math.abs(r.adjustments))}</td>
+      <td class="r num ${r.net<0?"red":""}">$${fmt(r.net)}</td></tr>`).join("")}
+    </table></div></div>`:""}
+
+  ${openOnes.length?`<h3 style="margin:18px 0 10px;font-size:13px">Open</h3>`:""}
+  ${openOnes.map(adjCard).join("")}
+  ${closed.length?`<h3 style="margin:18px 0 10px;font-size:13px">Resolved this week</h3>`:""}
+  ${closed.map(adjCard).join("")}
+  ${!all.length?`<div class="card"><div class="body small muted">Nothing recorded.</div></div>`:""}`;
+}
+
+function jobLabelFor(id){
+  const j = obj(D.jobs)[id];
+  if (!j) return "";
+  return `${j.invoice ? "#"+j.invoice+" — " : ""}${j.customer||"Untitled"} — $${fmt0(num(j.sold))}`;
+}
+
+/* Invoice number first, then customer, then tech. Exact invoice wins. */
+function searchJobs(q){
+  const s = String(q||"").trim().toLowerCase();
+  if (s.length < 2) return [];
+  return list(D.jobs).map(j=>{
+    const inv = String(j.invoice||"").toLowerCase();
+    const cust = String(j.customer||"").toLowerCase();
+    const tech = pname(j.techId).toLowerCase();
+    let score = 0;
+    if (inv === s) score = 100;
+    else if (inv.startsWith(s)) score = 80;
+    else if (inv.includes(s)) score = 60;
+    else if (cust.startsWith(s)) score = 40;
+    else if (cust.includes(s)) score = 30;
+    else if (tech.includes(s)) score = 20;
+    return { j, score };
+  }).filter(x=>x.score > 0)
+    .sort((a,b)=> b.score - a.score || String(b.j.date||"").localeCompare(String(a.j.date||"")))
+    .slice(0,8).map(x=>x.j);
+}
+
+function jobFindResults(){
+  if (S.adjPick || !S.adjFind) return "";
+  const hits = searchJobs(S.adjFind);
+  if (!hits.length) return String(S.adjFind).trim().length >= 2
+    ? `<div class="findbox"><div class="findrow dim">No job matches that.</div></div>` : "";
+  return `<div class="findbox">${hits.map(j=>`
+    <div class="findrow" onclick="A.pickJob('${j.id}')">
+      <span class="fi">${esc(j.invoice||"no inv")}</span>
+      <span class="fc">${esc(j.customer||"Untitled")}</span>
+      <span class="fd dim">${esc(j.date||"")} · ${esc(pname(j.techId))}</span>
+      <span class="fs num">$${fmt0(num(j.sold))}</span>
+    </div>`).join("")}</div>`;
+}
+
+function adjCard(adj){
+  const job = adj.jobId ? obj(D.jobs)[adj.jobId] : null;
+  const eff = adjEffects(adj);
+  const p = `adjustments/${adj.id}`;
+  const tone = adj.status === "Open" ? "amb" : adj.status === "Collected" ? "grn" : "red";
+  const total = eff.reduce((s,e)=>s+e.amount,0);
+  return `<div class="card">
+    <div class="head">
+      <span class="tag ${adj.type==="Credit"?"grn":"red"}">${esc(adj.type)}</span>
+      <div class="grow"><h3>${esc(job?.customer || adj.customer || "Not tied to a job")}</h3>
+        <div class="tiny dim">${job?`Invoice ${esc(job.invoice||"—")} · sale $${fmt0(num(job.sold))} · `:""}
+          ${esc(adj.date||"")} · ${esc(adj.reason||"no reason given")}</div></div>
+      <div style="text-align:right"><div class="tiny dim">${adjApplies(adj)?"Coming out of pay":"Not affecting pay"}</div>
+        <b class="num ${total<0?"red":"grn"}">${total<0?"−":"+"}$${fmt(Math.abs(total))}</b></div>
+      <select data-k="${p}-st" style="width:190px" onchange="A.setAdjStatus('${adj.id}',this.value)">
+        ${ADJ_STATUS.map(s=>`<option ${s===adj.status?"selected":""}>${s}</option>`).join("")}</select>
+    </div>
+    <div class="body">
+      ${adj.type!=="Credit"?`<div class="row" style="margin-bottom:10px">
+        <div style="width:150px"><label class="lbl">Refund amount</label>
+          <input data-k="${p}-amt" class="num" inputmode="decimal" value="${esc(adj.amount||"")}"
+            ${adj.type==="Full chargeback"?"disabled placeholder='whole job'":""}
+            oninput="A.f('${p}/amount',this.value)"></div>
+        <div style="width:150px"><label class="lbl">Week it hits</label>
+          <input data-k="${p}-wk" type="date" value="${esc(adj.weekId||"")}"
+            onchange="A.f('${p}/weekId',A.mon(this.value))"></div>
+        <span class="tiny dim" style="align-self:center">
+          ${adj.status==="Collected"?"Collected — commission goes back to the crew."
+          :adj.status==="Sent to collections"?"In collections — commission is gone for good."
+          :"Open — commission held until this resolves."}</span>
+      </div>`:""}
+      <div class="scroll"><table>
+        <tr><th>Person</th><th>Role</th><th class="r">Amount</th><th class="r">Override</th></tr>
+        ${eff.length?eff.map(e=>`<tr><td>${esc(e.name)}</td><td class="tiny dim">${esc(e.role)}</td>
+          <td class="r num ${e.amount<0?"red":"grn"}">${e.amount<0?"−":"+"}$${fmt(Math.abs(e.amount))}</td>
+          <td class="r"><input data-k="${p}-ov-${e.personId}" class="num" style="width:100px;text-align:right"
+            placeholder="auto" value="${esc(obj(adj.overrides)[e.personId]||"")}"
+            oninput="A.f('${p}/overrides/${e.personId}',this.value)"></td></tr>`).join("")
+          :`<tr><td colspan="4" class="small muted">${adj.type==="Credit"
+              ? `No one added yet.` : `No commission was earned on this job, so there's nothing to take back.`}</td></tr>`}
+      </table></div>
+      ${adj.type==="Credit"?`<div class="row" style="margin-top:10px">
+        <select data-k="${p}-newp" style="max-width:220px"><option value="">Add a person…</option>
+          ${list(D.people).sort((a,b)=>(a.name||"").localeCompare(b.name||"")).map(pp=>
+            `<option value="${pp.id}">${esc(pp.name)}</option>`).join("")}</select>
+        <input data-k="${p}-newa" class="num" style="width:120px" placeholder="Amount">
+        <button class="btn sm" onclick="A.addAdjEntry('${adj.id}')">Add</button></div>`:""}
+      <div class="row" style="margin-top:12px"><button class="link mut" onclick="A.delAdj('${adj.id}')">Delete this record</button></div>
+    </div></div>`;
+}
+
+/* ---------- payroll ---------- */
+function vPayroll(){
+  const w = weekMeta(S.weekId||thisWeekId());
+  const rows = payrollFor(w.id);
+  const tot = rows.reduce((a,r)=>({sales:a.sales+r.sales,supervisor:a.supervisor+r.supervisor,
+    install:a.install+r.install,adjustments:a.adjustments+r.adjustments,net:a.net+r.net}),
+    {sales:0,supervisor:0,install:0,adjustments:0,net:0});
+  return `<div class="card"><div class="head">${weekPicker()}
+    <span class="spacer"></span><button class="btn ghost sm" onclick="A.exportWeek()">Export this week</button></div>
+    <div class="scroll"><table>
+      <tr><th>Person</th><th class="r">Sales</th><th class="r">Supervisor</th><th class="r">Install</th>
+        <th class="r">Chargebacks</th><th class="r">Net pay</th></tr>
+      ${rows.length?rows.map(r=>`<tr>
+        <td><b>${esc(r.name)}</b></td>
+        <td class="r num">${r.sales?"$"+fmt(r.sales):`<span class="dim">—</span>`}</td>
+        <td class="r num">${r.supervisor?"$"+fmt(r.supervisor):`<span class="dim">—</span>`}</td>
+        <td class="r num">${r.install?"$"+fmt(r.install):`<span class="dim">—</span>`}</td>
+        <td class="r num ${r.adjustments<0?"red":r.adjustments>0?"grn":"dim"}">${
+          r.adjustments?(r.adjustments<0?"−":"+")+"$"+fmt(Math.abs(r.adjustments)):"—"}</td>
+        <td class="r num ${r.net<0?"red":""}"><b class="mid">$${fmt(r.net)}</b></td></tr>`).join("")
+        :`<tr><td colspan="6" class="small muted">No pay recorded for this week yet.</td></tr>`}
+      ${rows.length?`<tr style="border-top:2px solid var(--line)"><td><b>Total</b></td>
+        <td class="r num">$${fmt(tot.sales)}</td><td class="r num">$${fmt(tot.supervisor)}</td>
+        <td class="r num">$${fmt(tot.install)}</td>
+        <td class="r num ${tot.adjustments<0?"red":""}">${tot.adjustments<0?"−":""}$${fmt(Math.abs(tot.adjustments))}</td>
+        <td class="r num"><b class="mid">$${fmt(tot.net)}</b></td></tr>`:""}
+    </table></div>
+    <div class="body tiny dim">Commission only pays on jobs marked complete and collected in full.
+    A week that crosses a month or a year stays whole here — reporting counts each job on its own date instead.</div>
+  </div>`;
+}
+
+/* ---------- reports ---------- */
+function vReports(){
+  const w = weekMeta(S.weekId||thisWeekId());
+  const jobs = weekJobs(w.id);
+  const rows = jobs.map(job=>{
+    const ctx = jobContext(job), m = jobMath(job,ctx.techRate,ctx.supRate);
+    const commissions = m.techPay + m.supPay;
+    const labor = job.isSelfPerformed ? 0
+      : list(obj(D.assignments)[job.id]).reduce((a,x)=>a+installMath(job,x,m).pay,0);
+    const c = obj(D.costs)[job.id] || {};
+    const extra = num(c.extraLabor), parts = num(c.parts);
+    const op = m.sold * ((parseFloat(D.settings.operatingPct)||0)/100);
+    const cost = commissions + labor + extra + parts + op;
+    return {job,ctx,m,commissions,labor,extra,parts,op,cost,net:m.sold-cost,
+            pct: m.sold>0 ? ((m.sold-cost)/m.sold)*100 : 0};
+  });
+  const rev = rows.reduce((a,r)=>a+r.m.sold,0), net = rows.reduce((a,r)=>a+r.net,0);
+  return `<div class="card"><div class="head">${weekPicker()}
+    <label style="width:auto"><span class="lbl">Operating cost %</span>
+      <input data-k="oppct" class="num" style="width:80px;text-align:right" value="${esc(D.settings.operatingPct||"")}"
+        oninput="A.f('settings/operatingPct',this.value)"></label>
+    <span class="spacer"></span>
+    <button class="btn ghost sm" onclick="A.exportAll()">Export everything</button></div>
+    <div class="stats">
+      <div class="stat"><div class="k">Revenue</div><div class="v num">$${fmt0(rev)}</div></div>
+      <div class="stat"><div class="k">Net margin</div><div class="v num ${net<0?"red":""}">$${fmt0(net)}</div></div>
+      <div class="stat"><div class="k">Net margin %</div><div class="v num">${rev>0?((net/rev)*100).toFixed(1):"0.0"}%</div></div>
+    </div></div>
+  ${rows.length?rows.map(r=>`<div class="card">
+    <div class="head"><div class="grow"><h3>${esc(r.job.customer||"Untitled job")}</h3>
+      <div class="tiny dim">Invoice ${esc(r.job.invoice||"—")} · ${esc(r.ctx.techName)}
+        ${r.ctx.supName?`· ${esc(r.ctx.supName)}'s pod`:`· <span class="red">no supervisor</span>`}
+        ${r.job.isSelfPerformed?"· self-performed":""} · ${esc(r.job.date||"")}</div></div>
+      <div style="text-align:right"><div class="tiny dim">Net margin</div>
+        <div class="mid num ${r.net<0?"red":""}">$${fmt(r.net)} <span class="tiny dim">(${r.pct.toFixed(1)}%)</span></div></div></div>
+    <div class="body">
+      ${line("Job revenue",r.m.sold)}
+      ${line("Commissions — technician and supervisor",-r.commissions)}
+      ${line("Install labor",-r.labor,r.labor===0)}
+      <div class="l" style="display:flex;justify-content:space-between;align-items:center;padding:5px 0">
+        <span class="small">Additional labor cost</span>
+        <input data-k="cost-${r.job.id}-el" class="num" style="width:120px;text-align:right"
+          value="${esc((obj(D.costs)[r.job.id]||{}).extraLabor||"")}" oninput="A.f('costs/${r.job.id}/extraLabor',this.value)"></div>
+      <div class="l" style="display:flex;justify-content:space-between;align-items:center;padding:5px 0">
+        <span class="small">Parts cost <span class="dim">— actual, not the 10% commission deduction</span></span>
+        <input data-k="cost-${r.job.id}-pt" class="num" style="width:120px;text-align:right"
+          value="${esc((obj(D.costs)[r.job.id]||{}).parts||"")}" oninput="A.f('costs/${r.job.id}/parts',this.value)"></div>
+      ${line(`Operating cost — ${esc(D.settings.operatingPct||0)}%`,-r.op)}
+      ${line("Total cost",r.cost,false,true)}
+      ${line("Net margin",r.net,false,true)}
+    </div></div>`).join("") : `<div class="card"><div class="body small muted">No jobs this week yet.</div></div>`}`;
+}
+
+/* ---------- org chart ---------- */
+function vOrg(){
+  const today = todayIso();
+  const active = postings().filter(p=>!p.to && person(p.personId));
+  const past = postings().filter(p=>p.to && person(p.personId));
+  const kids = id => active.filter(p=>p.parentId===id);
+  const activeId = id => active.some(p=>p.personId===id);
+  const roots = side => active.filter(p=>ROLES[p.role]?.side===side && (!p.parentId || !activeId(p.parentId)));
+
+  const node = (p,hd) => {
+    const ks = kids(p.personId);
+    const isPod = p.role === "Sales Supervisor";
+    const inner = `<div class="node">
+      <div class="box ${hd?"hd":""}"><div class="n">${esc(pname(p.personId))}</div><div class="r">${esc(p.role)}</div>
+        <div style="margin-top:5px;display:flex;gap:9px;justify-content:center">
+          <button class="link" style="font-size:10px" onclick="A.startMove('${p.id}')">Move</button>
+          <button class="link mut" style="font-size:10px" onclick="A.startEnd('${p.id}')">End</button></div></div>
+      ${ks.length?`<div class="vline"></div><div class="kids">${ks.map((k,i)=>`<div class="kid">
+        <div style="position:relative;width:100%;height:1px">
+          <div class="hline" style="position:absolute;top:0;${i===0?"left:50%;":"left:0;"}${i===ks.length-1?"right:50%;":"right:0;"}"></div></div>
+        <div class="vline"></div>${node(k,false)}</div>`).join("")}</div>`:""}
+    </div>`;
+    return isPod && ks.length ? `<div class="pod"><span class="cap">Sales pod</span>${inner}</div>` : inner;
+  };
+
+  const tree = (side,title,empty) => `<div class="card"><div class="head"><h3>${title}</h3></div>
+    <div class="body scroll">${roots(side).length
+      ? `<div style="display:flex;gap:26px;justify-content:center;min-width:min-content">${roots(side).map(r=>node(r,true)).join("")}</div>`
+      : `<div class="small muted">${empty}</div>`}</div></div>`;
+
+  const f = S.orgForm || {name:"",role:"Service Technician",parentId:"",from:today};
+  const pr = ROLES[f.role]?.parent;
+  const opts = pr ? peopleAt(f.from,pr) : [];
+
+  return `
+  <div class="card"><div class="head"><h2>Add someone</h2>
+    <span class="tiny dim">Any day of the week works — everything is dated, so past weeks keep the people who were actually here.</span></div>
+    <div class="body row">
+      <div class="grow"><label class="lbl">Name</label>
+        <input data-k="org-name" value="${esc(f.name)}" oninput="A.org('name',this.value)"></div>
+      <div style="width:190px"><label class="lbl">Role</label>
+        <select data-k="org-role" onchange="A.org('role',this.value)">
+          ${ROLE_NAMES.map(r=>`<option ${r===f.role?"selected":""}>${esc(r)}</option>`).join("")}</select></div>
+      ${pr?`<div style="width:200px"><label class="lbl">Reports to (${esc(pr)})</label>
+        <select data-k="org-par" onchange="A.org('parentId',this.value)"><option value="">Choose…</option>
+          ${opts.map(o=>`<option value="${o.personId}" ${o.personId===f.parentId?"selected":""}>${esc(pname(o.personId))}</option>`).join("")}
+        </select></div>`:""}
+      <div style="width:160px"><label class="lbl">Start date</label>
+        <input data-k="org-from" type="date" value="${esc(f.from)}" onchange="A.org('from',this.value)"></div>
+      <button class="btn" onclick="A.addPerson()">Add to chart</button>
+    </div>
+    ${pr && !opts.length?`<div class="body tiny amb" style="padding-top:0">Add a ${esc(pr.toLowerCase())} first — this role has to report to one.</div>`:""}
+    ${ROLES[f.role]?.requiresParent?`<div class="body tiny dim" style="padding-top:0">Every technician sits in a pod. The supervisor earns on every job that tech sells.</div>`:""}
+  </div>
+
+  ${S.moving?movePanel():""}
+  ${S.ending?endPanel():""}
+  ${tree("sales","Sales — manager, supervisors, technicians","Add a sales manager, then supervisors, then technicians under them.")}
+  ${tree("ops","Install — ops manager, field manager, leads and helpers","Add an ops manager, then a field manager, then your crews.")}
+
+  ${past.length?`<div class="card"><div class="head">
+    <button class="link mut" onclick="A.togglePast()">${S.showPast?"Hide":"Show"} past postings (${past.length})</button></div>
+    ${S.showPast?`<div class="body">${past.sort((a,b)=>(b.to||"").localeCompare(a.to||"")).map(p=>
+      `<div class="small" style="padding:3px 0;border-bottom:1px solid #1b1b1b">
+        <b>${esc(pname(p.personId))}</b> <span class="muted">— ${esc(p.role)}${
+        p.parentId?` under ${esc(pname(p.parentId))}`:""}, ${esc(p.from)} to ${esc(p.to)}</span>
+        <button class="link mut" style="float:right" onclick="A.reopen('${p.id}')">Reopen</button></div>`).join("")}
+      <div class="tiny dim" style="margin-top:10px">Their jobs stay put. Weeks inside these dates still show them.</div>
+    </div>`:""}</div>`:""}`;
+}
+
+function movePanel(){
+  const m = S.moving, cur = obj(D.postings)[m.id];
+  if (!cur) return "";
+  const pr = ROLES[m.role]?.parent;
+  const opts = pr ? peopleAt(m.from,pr) : [];
+  const tooEarly = m.from <= cur.from;
+  return `<div class="card" style="border-color:var(--red)"><div class="head"><h3>Move ${esc(pname(cur.personId))}</h3></div>
+    <div class="body row">
+      <div style="width:200px"><label class="lbl">New role</label>
+        <select data-k="mv-role" onchange="A.mv('role',this.value)">
+          ${ROLE_NAMES.map(r=>`<option ${r===m.role?"selected":""}>${esc(r)}</option>`).join("")}</select></div>
+      ${pr?`<div style="width:210px"><label class="lbl">Reports to (${esc(pr)})</label>
+        <select data-k="mv-par" onchange="A.mv('parentId',this.value)"><option value="">Choose…</option>
+          ${opts.map(o=>`<option value="${o.personId}" ${o.personId===m.parentId?"selected":""}>${esc(pname(o.personId))}</option>`).join("")}
+        </select></div>`:""}
+      <div style="width:170px"><label class="lbl">Effective</label>
+        <input data-k="mv-from" type="date" value="${esc(m.from)}" onchange="A.mv('from',this.value)"></div>
+      <button class="btn" onclick="A.doMove()" ${tooEarly?"disabled":""}>Save move</button>
+      <button class="link mut" onclick="A.cancelMove()">Cancel</button>
+    </div>
+    <div class="body tiny ${tooEarly?"red":"dim"}" style="padding-top:0">
+      ${tooEarly
+        ? `The effective date has to be after ${esc(cur.from)}, when this posting started. Pick a later day.`
+        : `The old posting closes ${esc(addDays(m.from,-1))}. Every week before that keeps them where they were.`}</div></div>`;
+}
+function endPanel(){
+  const p = obj(D.postings)[S.ending.id];
+  if (!p) return "";
+  const bad = S.ending.date < p.from;
+  return `<div class="card" style="border-color:var(--red)"><div class="head"><h3>Last day for ${esc(pname(p.personId))}</h3></div>
+    <div class="body row">
+      <div style="width:170px"><label class="lbl">Last day</label>
+        <input data-k="end-date" type="date" value="${esc(S.ending.date)}" onchange="A.endDate(this.value)"></div>
+      <button class="btn" onclick="A.doEnd()" ${bad?"disabled":""}>End posting</button>
+      <button class="link mut" onclick="A.cancelEnd()">Cancel</button>
+    </div>
+    <div class="body tiny ${bad?"red":"dim"}" style="padding-top:0">${bad
+      ? `Can't end before the posting started (${esc(p.from)}).`
+      : `Their history stays. Any week that includes ${esc(S.ending.date)} still shows them and pays them.`}</div></div>`;
+}
+
+/* ---------- archives ---------- */
+function vArchives(){
+  const years = [...new Set(list(D.jobs).map(j=>String(j.date||"").slice(0,4)).filter(Boolean))].sort().reverse();
+  const stored = S.archives === null ? null : list(S.archives);
+  return `<div class="card"><div class="head"><h2>Archives</h2></div><div class="body">
+    <p class="small muted" style="margin-bottom:14px">Archiving takes a year's jobs out of the day-to-day screens and
+    stores them separately, so the app stays quick. A zip downloads at the same time. Nothing is lost — you can
+    view or restore any year from below.</p>
+    <div class="row">
+      <div style="width:150px"><label class="lbl">Year</label>
+        <select data-k="arc-year" id="arc-year"><option value="">Choose…</option>
+          ${years.map(y=>`<option>${y}</option>`).join("")}</select></div>
+      <button class="btn" onclick="A.archiveYear()">Archive and download</button>
+      <button class="btn ghost" onclick="A.exportAll()">Export everything now</button>
+    </div>
+    <div class="tiny dim" style="margin-top:8px">Jobs are archived by their own date, so a week that straddles New Year
+    keeps each job in the year it happened.</div>
+  </div></div>
+
+  <div class="card"><div class="head"><h3>Stored years</h3>
+    <button class="link" onclick="A.loadArchives()">Refresh</button></div>
+    <div class="body">${stored === null
+      ? `<button class="btn ghost sm" onclick="A.loadArchives()">Load archived years</button>`
+      : stored.length
+        ? stored.map(a=>`<div class="row" style="padding:8px 0;border-bottom:1px solid #1b1b1b;align-items:center">
+            <b class="mid">${esc(a.id)}</b>
+            <span class="small muted grow">${Object.keys(obj(a.jobs)).length} jobs · archived ${esc((a.meta?.at||"").slice(0,10))} by ${esc(a.meta?.by||"—")}</span>
+            <button class="link" onclick="A.redownload('${a.id}')">Download zip</button>
+            <button class="link mut" onclick="A.restoreYear('${a.id}')">Restore to live</button></div>`).join("")
+        : `<div class="small muted">Nothing archived yet.</div>`}</div></div>`;
+}
+
+/* ---------- admin ---------- */
+function adminLock(){
+  return `<div class="card" style="max-width:420px;margin:40px auto">
+    <div class="body" style="text-align:center">
+      <img src="ag-logo.png" alt="" style="height:72px;display:block;margin:0 auto 16px"
+           onerror="this.style.display='none'">
+      <h2 style="font-size:20px">Admin passcode</h2>
+      <p class="small muted" style="margin:10px 0 18px">
+        Logins, archiving and the clear-data tools live behind this.</p>
+      ${S.adminErr ? `<div class="banner err">${esc(S.adminErr)}</div>` : ""}
+      <input data-k="ad-code" id="ad-code" type="password" inputmode="text"
+        autocomplete="off" style="text-align:center;letter-spacing:.2em"
+        onkeydown="if(event.key==='Enter')A.openAdmin()">
+      <button class="btn" style="width:100%;margin-top:14px" onclick="A.openAdmin()">Unlock</button>
+      <button class="link mut" style="display:block;margin:16px auto 0"
+        onclick="A.go('dashboard')">Back to dashboard</button>
+    </div></div>`;
+}
+
+function vAdmin(){
+  if (!S.adminOpen) return adminLock();
+  const rows = logins().sort((a,b)=>String(a.name||"").localeCompare(String(b.name||"")));
+  return `<div class="card"><div class="head"><h2>Who can sign in</h2>
+    <span class="tiny dim">Changes are live for everyone right away.</span>
+    <span class="grow"></span>
+    <button class="link mut" onclick="A.lockAdmin()">Lock this section</button></div>
+    <div class="body row">
+      <div class="grow"><label class="lbl">Name</label><input data-k="nl-name" id="nl-name"></div>
+      <div class="grow"><label class="lbl">Username</label>
+        <input data-k="nl-user" id="nl-user" autocapitalize="none" spellcheck="false"></div>
+      <div style="width:170px"><label class="lbl">Password</label><input data-k="nl-pass" id="nl-pass" type="text"></div>
+      <div style="width:140px"><label class="lbl">Access</label>
+        <select data-k="nl-admin" id="nl-admin"><option value="user">User</option><option value="admin">Admin</option></select></div>
+      <button class="btn" onclick="A.addLogin()">Add login</button>
+    </div>
+    <div class="scroll"><table>
+      <tr><th>Name</th><th>Username</th><th>Password</th><th>Access</th><th>Status</th><th class="r">Actions</th></tr>
+      ${rows.length ? rows.map(u=>`<tr>
+        <td><input data-k="l-${u.id}-n" value="${esc(u.name||"")}" style="width:150px"
+              onchange="A.setLogin('${u.id}','name',this.value)"></td>
+        <td><input data-k="l-${u.id}-u" value="${esc(u.user||"")}" style="width:130px"
+              autocapitalize="none" spellcheck="false"
+              onchange="A.setLogin('${u.id}','user',this.value)"></td>
+        <td><input data-k="l-${u.id}-p" value="${esc(u.pass||"")}" style="width:130px"
+              onchange="A.setLogin('${u.id}','pass',this.value)"></td>
+        <td><select data-k="l-${u.id}-a" style="width:110px"
+              onchange="A.setLogin('${u.id}','admin',this.value==='admin')">
+          <option value="user" ${u.admin?"":"selected"}>User</option>
+          <option value="admin" ${u.admin?"selected":""}>Admin</option></select></td>
+        <td><span class="tag ${u.off?"red":"grn"}">${u.off?"Turned off":"Active"}</span></td>
+        <td class="r">
+          <button class="link" onclick="A.toggleLogin('${u.id}',${!u.off})">${u.off?"Turn on":"Turn off"}</button>
+          <button class="link mut" onclick="A.removeLogin('${u.id}')">Remove</button>
+        </td></tr>`).join("")
+      : `<tr><td colspan="6" class="small muted">No logins yet.</td></tr>`}
+    </table></div>
+    <div class="body row between" style="border-top:1px solid var(--line)">
+      <div class="small muted">Admin passcode — unlocks admin tools on any signed-in device.
+        Currently <b>${esc(adminCode())}</b></div>
+      <button class="btn ghost" onclick="A.setAdminCode()">Change passcode</button>
+    </div>
+    <div class="body tiny dim" style="padding-top:0">
+      Edit a name, username or password right in the table — it saves when you tap out of the box.
+      Turning someone off blocks them the next time they sign in; it doesn't kick them out mid-session.
+      Passwords are readable by anyone signed in, so don't reuse one from somewhere else.
+    </div>
+  </div>
+
+  <div class="card"><div class="head"><h3>Danger zone</h3></div><div class="body">
+    <p class="small muted" style="margin-bottom:12px">Export first. These wipe the data for everyone, not just you.</p>
+    <div class="row">
+      <button class="btn ghost" onclick="A.wipe('entries')">Clear jobs, chargebacks and KPIs</button>
+      <button class="btn ghost" onclick="A.wipe('all')">Clear everything including the org chart</button>
+    </div></div></div>`;
+}
+
+/* ============================ ACTIONS ============================ */
+const A = {
+  go(v){
+    if (S.view === "admin" && v !== "admin"){ S.adminOpen = false; S.adminErr = ""; }
+    S.view = v; S.err = ""; render();
+  },
+  openWeek(id){ S.weekId = id; if (S.view === "dashboard") S.view = "week"; render(); },
+  mon: mondayOf,
+  toggleJob(id){ S.openJob[id] = !S.openJob[id]; render(); },
+  togglePast(){ S.showPast = !S.showPast; render(); },
+
+  f(path,value){ writeField(path,value); render(); },
+
+  setKpi(weekId,personId,field,value){
+    const cur = kpiFor(weekId,personId);
+    patch(`kpi/${weekId}/${personId}`, {...cur, [field]:value});
+    applyLocal(`kpi/${weekId}/${personId}`, {...cur,[field]:value});
+    render();
+  },
+
+  addJob(techId,dateDefault){
+    const id = uid();
+    put(`jobs/${id}`, { techId, date: dateDefault, customer:"", invoice:"", sold:"", collected:"",
+      paymentType:"Card", isComplete:false, isSelfPerformed:false, split:"" });
+    logIt(`Started a job for ${pname(techId)}`);
+  },
+  delJob(id){
+    const j = obj(D.jobs)[id];
+    if (!confirm(`Remove ${(j?.customer||"this job")}? This takes it off everyone's pay.`)) return;
+    drop(`jobs/${id}`); drop(`assignments/${id}`); drop(`costs/${id}`);
+    logIt(`Removed job ${(j?.customer||"(no name)")}`);
+  },
+
+  addAssign(jobId){
+    const id = uid();
+    put(`assignments/${jobId}/${id}`, { personId:"", payType:"Commission", split:"", hours:"", hourlyRate:"" });
+  },
+  delAssign(jobId,id){ drop(`assignments/${jobId}/${id}`); },
+  splitEven(jobId){
+    const as = list(obj(D.assignments)[jobId]).filter(a=>a.payType!=="Hourly");
+    if (!as.length) return;
+    // to the hundredth, with the rounding crumb going to the first installer
+    const each = Math.floor((100/as.length)*100)/100;
+    const rest = Math.round((100 - each*as.length)*100)/100;
+    as.forEach((a,i)=> put(`assignments/${jobId}/${a.id}/split`, String(i===0 ? Math.round((each+rest)*100)/100 : each)));
+  },
+
+  findJob(v){ S.adjFind = v; S.adjPick = null; render(); },
+  pickJob(id){ S.adjPick = id; S.adjFind = ""; render(); },
+  clearJob(){ S.adjPick = null; S.adjFind = ""; render(); },
+
+  addAdj(){
+    const jobId = S.adjPick || "", type = $("#nadj-type").value;
+    const amount = $("#nadj-amt").value, date = $("#nadj-date").value || todayIso();
+    const reason = $("#nadj-why").value;
+    if (!jobId && type !== "Credit") return toast("Pick the job this came from, or record it as a credit.");
+    if (type === "Partial refund" && !num(amount)) return toast("A partial refund needs an amount.");
+    const id = uid();
+    const job = jobId ? obj(D.jobs)[jobId] : null;
+    put(`adjustments/${id}`, { jobId: jobId||null, type, amount: amount||"", date,
+      weekId: mondayOf(date), reason, status:"Open",
+      customer: job?.customer || "", invoice: job?.invoice || "" });
+    ["#nadj-amt","#nadj-why"].forEach(s=>{ const e=$(s); if(e) e.value=""; });
+    S.adjPick = null; S.adjFind = "";
+    logIt(`${type} recorded for ${job?.customer || "an unlinked item"}`);
+  },
+  setAdjStatus(id,status){
+    put(`adjustments/${id}/status`, status);
+    applyLocal(`adjustments/${id}/status`, status);
+    const a = obj(D.adjustments)[id];
+    logIt(`${a?.type||"Adjustment"} for ${a?.customer||"—"} marked ${status.toLowerCase()}`);
+    render();
+  },
+  addAdjEntry(adjId){
+    const pid = document.querySelector(`[data-k="adjustments/${adjId}-newp"]`)?.value;
+    const amt = document.querySelector(`[data-k="adjustments/${adjId}-newa"]`)?.value;
+    if (!pid || !num(amt)) return toast("Pick a person and an amount.");
+    const eid = uid();
+    put(`adjustments/${adjId}/entries/${eid}`, { personId:pid, amount:amt, role:"" });
+  },
+  delAdj(id){ if (confirm("Delete this record?")) { drop(`adjustments/${id}`); } },
+
+  /* org chart */
+  org(field,value){
+    S.orgForm = {...(S.orgForm||{name:"",role:"Service Technician",parentId:"",from:todayIso()}), [field]:value};
+    if (field === "role") S.orgForm.parentId = "";
+    render();
+  },
+  addPerson(){
+    const f = S.orgForm || {};
+    if (!f.name || !f.name.trim()) return toast("Give them a name.");
+    const pr = ROLES[f.role]?.parent;
+    if (ROLES[f.role]?.requiresParent && !f.parentId) return toast(`Every ${f.role.toLowerCase()} needs a supervisor.`);
+    if (pr && !f.parentId) return toast(`Pick who they report to.`);
+    const pid = uid();
+    put(`people/${pid}`, { name: f.name.trim() });
+    put(`postings/${uid()}`, { personId:pid, role:f.role, parentId:f.parentId||null, from:f.from||todayIso(), to:null });
+    logIt(`Added ${f.name.trim()} as ${f.role}`);
+    S.orgForm = {...f, name:"", parentId:""};
+    render();
+  },
+  startMove(postingId){
+    const p = obj(D.postings)[postingId];
+    S.moving = { id:postingId, role:p.role, parentId:p.parentId||"", from: todayIso() > p.from ? todayIso() : addDays(p.from,1) };
+    S.ending = null; render();
+  },
+  mv(field,value){ S.moving = {...S.moving,[field]:value}; if (field==="role") S.moving.parentId=""; render(); },
+  cancelMove(){ S.moving = null; render(); },
+  doMove(){
+    const m = S.moving, cur = obj(D.postings)[m.id];
+    if (!cur || m.from <= cur.from) return toast("Pick a date after this posting started.");
+    if (ROLES[m.role]?.requiresParent && !m.parentId) return toast(`Every ${m.role.toLowerCase()} needs a supervisor.`);
+    put(`postings/${m.id}/to`, addDays(m.from,-1));
+    put(`postings/${uid()}`, { personId:cur.personId, role:m.role, parentId:m.parentId||null, from:m.from, to:null });
+    logIt(`${pname(cur.personId)} moved to ${m.role} on ${m.from}`);
+    S.moving = null; render();
+  },
+  startEnd(postingId){ S.ending = { id:postingId, date: todayIso() }; S.moving = null; render(); },
+  endDate(v){ S.ending = {...S.ending, date:v}; render(); },
+  cancelEnd(){ S.ending = null; render(); },
+  doEnd(){
+    const e = S.ending, p = obj(D.postings)[e.id];
+    if (!p || e.date < p.from) return toast("That's before the posting started.");
+    put(`postings/${e.id}/to`, e.date);
+    logIt(`${pname(p.personId)} — last day ${e.date}`);
+    S.ending = null; render();
+  },
+  reopen(postingId){
+    const p = obj(D.postings)[postingId];
+    if (!confirm(`Put ${pname(p.personId)} back on the chart as ${p.role}?`)) return;
+    put(`postings/${postingId}/to`, null);
+    logIt(`${pname(p.personId)} reopened as ${p.role}`);
+  },
+
+  /* sign in — checked against the logins stored in Firebase */
+  login(){
+    S.err = "";
+    const u = document.querySelector('[data-k="li-user"]').value.trim().toLowerCase();
+    const p = document.querySelector('[data-k="li-pass"]').value;
+    const found = logins().find(x => String(x.user||"").toLowerCase() === u && x.pass === p);
+    if (!found){ S.err = "That username and password don't match."; return render(); }
+    if (found.off){ S.err = "That login has been turned off."; return render(); }
+    S.me = { id: found.id, name: found.name, user: found.user, role: found.admin ? "admin" : "user" };
+    try { sessionStorage.setItem("agp_me", JSON.stringify(S.me)); } catch(e){}
+    render();
+  },
+  logout(){
+    S.me = null; S.view = "dashboard"; S.adminOpen = false; S.adminErr = "";
+    try { sessionStorage.removeItem("agp_me"); } catch(e){}
+    render();
+  },
+  /* passcode unlock — lets a non-admin do admin things for this session */
+  unlock(){
+    const code = prompt("Admin passcode");
+    if (code === null) return;
+    if (code !== adminCode()) return toast("Wrong passcode.");
+    S.me = { ...S.me, role: "admin" };
+    S.adminOpen = true;
+    try { sessionStorage.setItem("agp_me", JSON.stringify(S.me)); } catch(e){}
+    toast("Admin unlocked for this session.");
+    render();
+  },
+  /* the wall on the Admin tab itself */
+  openAdmin(){
+    const el = document.querySelector('[data-k="ad-code"]');
+    const code = el ? el.value : "";
+    if (code !== adminCode()){ S.adminErr = "Wrong passcode."; return render(); }
+    S.adminOpen = true; S.adminErr = "";
+    render();
+  },
+  lockAdmin(){
+    S.adminOpen = false; S.adminErr = "";
+    S.view = "dashboard";
+    toast("Admin locked.");
+    render();
+  },
+
+  /* ---- managing logins, from the Admin tab ---- */
+  addLogin(){
+    const name = $("#nl-name").value.trim();
+    const user = $("#nl-user").value.trim().toLowerCase();
+    const pass = $("#nl-pass").value;
+    const admin = $("#nl-admin").value === "admin";
+    if (!name || !user || !pass) return toast("Name, username and password are all needed.");
+    if (logins().some(x => String(x.user||"").toLowerCase() === user))
+      return toast("That username is already taken.");
+    const id = push(ref(db,"logins")).key;
+    set(ref(db,`logins/${id}`), { name, user, pass, admin, off:false });
+    logIt(`Added login for ${name}`);
+    ["#nl-name","#nl-user","#nl-pass"].forEach(s=>{ const e=$(s); if(e) e.value=""; });
+    toast(`${name} can sign in now.`);
+  },
+  setLogin(id, field, value){
+    if (field === "user"){
+      const v = String(value).trim().toLowerCase();
+      if (!v) return toast("Username can't be blank.");
+      if (logins().some(x => x.id !== id && String(x.user||"").toLowerCase() === v))
+        return toast("That username is already taken.");
+      return put(`logins/${id}/user`, v);
+    }
+    put(`logins/${id}/${field}`, value);
+  },
+  toggleLogin(id, off){
+    const n = obj(D.logins)[id]?.name || "Someone";
+    if (off && id === S.me?.id) return toast("You can't turn off the login you're using.");
+    put(`logins/${id}/off`, off);
+    logIt(`${n}'s login turned ${off ? "off" : "on"}`);
+  },
+  removeLogin(id){
+    const n = obj(D.logins)[id]?.name || "this login";
+    if (id === S.me?.id) return toast("You can't remove the login you're using.");
+    if (logins().filter(x => x.admin && !x.off).length <= 1 && obj(D.logins)[id]?.admin)
+      return toast("That's the last admin — make someone else an admin first.");
+    if (!confirm(`Remove ${n}? They won't be able to sign in.`)) return;
+    drop(`logins/${id}`);
+    logIt(`Removed ${n}'s login`);
+  },
+  setAdminCode(){
+    const v = prompt("New admin passcode", adminCode());
+    if (v === null) return;
+    if (!v.trim()) return toast("The passcode can't be blank.");
+    put("settings/adminCode", v.trim());
+    toast("Passcode changed.");
+  },
+
+  wipe(kind){
+    const msg = kind === "entries"
+      ? "Delete every job, chargeback and KPI entry? The org chart stays."
+      : "Delete everything, org chart included?";
+    if (!confirm(msg + " This wipes it for everyone.")) return;
+    if (!confirm("Last check — this can't be undone. Export first if you haven't.")) return;
+    ["jobs","assignments","costs","adjustments","kpi"].forEach(k=>drop(k));
+    if (kind === "all") ["people","postings"].forEach(k=>drop(k));
+    logIt(kind === "all" ? "Cleared everything including the org chart" : "Cleared jobs, chargebacks and KPIs");
+  },
+
+  /* archives + export */
+  async loadArchives(){
+    try { const snap = await get(ref(db,"archives")); S.archives = snap.val() || {}; render(); }
+    catch(e){ toast(e.message); }
+  },
+  async archiveYear(){
+    const y = $("#arc-year").value;
+    if (!y) return toast("Pick a year.");
+    const jobs = list(D.jobs).filter(j => String(j.date||"").slice(0,4) === y);
+    if (!jobs.length) return toast(`No jobs dated ${y}.`);
+    if (!confirm(`Move ${jobs.length} jobs from ${y} out of the live screens? A zip downloads now and you can restore any time.`)) return;
+    const ids = new Set(jobs.map(j=>j.id));
+    const payload = {
+      meta: { at:new Date().toISOString(), by:S.me?.name||"", jobs:jobs.length },
+      jobs: Object.fromEntries(jobs.map(j=>{ const {id,...rest}=j; return [id,rest]; })),
+      assignments: Object.fromEntries(Object.entries(obj(D.assignments)).filter(([k])=>ids.has(k))),
+      costs: Object.fromEntries(Object.entries(obj(D.costs)).filter(([k])=>ids.has(k))),
+      adjustments: Object.fromEntries(Object.entries(obj(D.adjustments)).filter(([,a])=>a.jobId && ids.has(a.jobId)))
+    };
+    downloadZip(buildFiles(y, jobs), `action-group-payroll-${y}.zip`);
+    await set(ref(db,`archives/${y}`), payload);
+    ids.forEach(id=>{ drop(`jobs/${id}`); drop(`assignments/${id}`); drop(`costs/${id}`); });
+    Object.keys(payload.adjustments).forEach(id=>drop(`adjustments/${id}`));
+    logIt(`Archived ${y} — ${jobs.length} jobs`);
+    S.archives = null; toast(`${y} archived.`);
+  },
+  async restoreYear(y){
+    if (!confirm(`Put ${y} back into the live screens?`)) return;
+    const snap = await get(ref(db,`archives/${y}`));
+    const a = snap.val(); if (!a) return toast("Nothing stored for that year.");
+    await update(ref(db,"jobs"), obj(a.jobs));
+    await update(ref(db,"assignments"), obj(a.assignments));
+    await update(ref(db,"costs"), obj(a.costs));
+    await update(ref(db,"adjustments"), obj(a.adjustments));
+    await remove(ref(db,`archives/${y}`));
+    logIt(`Restored ${y} to the live list`);
+    S.archives = null; toast(`${y} restored.`);
+  },
+  async redownload(y){
+    const snap = await get(ref(db,`archives/${y}`));
+    const a = snap.val(); if (!a) return toast("Nothing stored for that year.");
+    const jobs = list(a.jobs);
+    downloadZip(buildFiles(y, jobs, a), `action-group-payroll-${y}.zip`);
+  },
+  exportAll(){ downloadZip(buildFiles(null, list(D.jobs)), `action-group-payroll-${todayIso()}.zip`); },
+  exportWeek(){
+    const w = weekMeta(S.weekId||thisWeekId());
+    downloadZip(buildFiles(w.label, weekJobs(w.id)), `action-group-payroll-week-${w.id}.zip`);
+  }
+};
+window.A = A;
+
+/* ---------- csv + zip ---------- */
+function csv(rows){
+  return rows.map(r=>r.map(c=>{
+    const v = c===null||c===undefined ? "" : String(c);
+    return /[",\n]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v;
+  }).join(",")).join("\n");
+}
+function buildFiles(scope, jobs, archived){
+  const src = archived || D;
+  const asg = id => list(obj(archived?archived.assignments:D.assignments)[id]);
+  const jobRows = [["Date","Week","Pod","Technician","Customer","Invoice","Total sold","Collected","Payment type",
+    "Complete","Self-performed","Split %","Commissionable","Technician pay","Supervisor pay","Install labor","Parts cost","Additional labor"]];
+  jobs.forEach(j=>{
+    const ctx = jobContext(j), m = jobMath(j,ctx.techRate,ctx.supRate);
+    const labor = j.isSelfPerformed ? 0 : asg(j.id).reduce((a,x)=>a+installMath(j,x,m).pay,0);
+    const c = obj(archived?archived.costs:D.costs)[j.id] || {};
+    jobRows.push([j.date, weekMeta(weekIdOf(j)).label, ctx.supName||"", ctx.techName, j.customer, j.invoice,
+      m.sold.toFixed(2), m.collected.toFixed(2), j.paymentType, j.isComplete?"Yes":"No",
+      j.isSelfPerformed?"Yes":"No", m.pct, m.commissionable.toFixed(2), m.techPay.toFixed(2),
+      m.supPay.toFixed(2), labor.toFixed(2), num(c.parts).toFixed(2), num(c.extraLabor).toFixed(2)]);
+  });
+
+  const payRows = [["Week","Person","Sales","Supervisor","Install","Chargebacks","Net pay"]];
+  [...new Set(jobs.map(weekIdOf))].sort().forEach(wid=>{
+    payrollFor(wid).forEach(r=>payRows.push([weekMeta(wid).label, r.name, r.sales.toFixed(2),
+      r.supervisor.toFixed(2), r.install.toFixed(2), r.adjustments.toFixed(2), r.net.toFixed(2)]));
+  });
+
+  const orgRows = [["Name","Role","Reports to","Started","Ended"]];
+  postings().forEach(p=>orgRows.push([pname(p.personId), p.role, p.parentId?pname(p.parentId):"", p.from, p.to||"current"]));
+
+  const instRows = [["Date","Customer","Invoice","Installer","Pay type","Share %","Hours","Rate","Pay"]];
+  jobs.forEach(j=>{
+    const ctx = jobContext(j), m = jobMath(j,ctx.techRate,ctx.supRate);
+    asg(j.id).forEach(a=>{ const im = installMath(j,a,m);
+      instRows.push([j.date, j.customer, j.invoice, pname(a.personId), a.payType, a.split, a.hours, a.hourlyRate, im.pay.toFixed(2)]); });
+  });
+
+  const cbRows = [["Date","Week","Type","Customer","Invoice","Amount","Status","Reason","Person","Role","Effect"]];
+  list(archived?archived.adjustments:D.adjustments).forEach(a=>{
+    const eff = adjEffects(a);
+    if (!eff.length) cbRows.push([a.date, weekMeta(a.weekId||todayIso()).label, a.type, a.customer, a.invoice, a.amount, a.status, a.reason,"","",""]);
+    eff.forEach(e=>cbRows.push([a.date, weekMeta(a.weekId||todayIso()).label, a.type, a.customer, a.invoice,
+      a.amount, a.status, a.reason, e.name, e.role, e.amount.toFixed(2)]));
+  });
+
+  return [
+    {name:"jobs.csv", text:csv(jobRows)},
+    {name:"payroll-by-person.csv", text:csv(payRows)},
+    {name:"installation.csv", text:csv(instRows)},
+    {name:"chargebacks.csv", text:csv(cbRows)},
+    {name:"org-chart.csv", text:csv(orgRows)},
+    {name:"backup.json", text:JSON.stringify(archived || {...D, users:undefined}, null, 2)},
+    {name:"README.txt", text:
+      "Action Group Payroll Tracker export\nGenerated " + new Date().toLocaleString() +
+      (scope ? "\nScope: " + scope : "\nScope: everything currently live") +
+      "\n\nThe CSVs open in Excel. backup.json is the complete record and is what you'd use\nto restore or move this data somewhere else.\n"}
+  ];
+}
+
+const CRC = (()=>{ const t = new Uint32Array(256);
+  for (let i=0;i<256;i++){ let c=i; for (let k=0;k<8;k++) c = c&1 ? 0xEDB88320 ^ (c>>>1) : c>>>1; t[i]=c>>>0; } return t; })();
+function crc32(b){ let c = 0xFFFFFFFF; for (let i=0;i<b.length;i++) c = CRC[(c^b[i])&0xFF] ^ (c>>>8); return (c^0xFFFFFFFF)>>>0; }
+function dosTime(d){ return ((d.getHours()<<11)|(d.getMinutes()<<5)|(d.getSeconds()>>1)) & 0xFFFF; }
+function dosDate(d){ return (((d.getFullYear()-1980)<<9)|((d.getMonth()+1)<<5)|d.getDate()) & 0xFFFF; }
+function makeZip(files){
+  const enc = new TextEncoder(), now = new Date();
+  const t = dosTime(now), dt = dosDate(now);
+  const parts = [], central = []; let offset = 0;
+  files.forEach(f=>{
+    const data = enc.encode(f.text), name = enc.encode(f.name), crc = crc32(data);
+    const local = new Uint8Array(30+name.length), lv = new DataView(local.buffer);
+    lv.setUint32(0,0x04034b50,true); lv.setUint16(4,20,true); lv.setUint16(6,0x0800,true);
+    lv.setUint16(10,t,true); lv.setUint16(12,dt,true);
+    lv.setUint32(14,crc,true); lv.setUint32(18,data.length,true); lv.setUint32(22,data.length,true);
+    lv.setUint16(26,name.length,true);
+    local.set(name,30); parts.push(local,data);
+    const cen = new Uint8Array(46+name.length), cv = new DataView(cen.buffer);
+    cv.setUint32(0,0x02014b50,true); cv.setUint16(4,20,true); cv.setUint16(6,20,true); cv.setUint16(8,0x0800,true);
+    cv.setUint16(12,t,true); cv.setUint16(14,dt,true);
+    cv.setUint32(16,crc,true); cv.setUint32(20,data.length,true); cv.setUint32(24,data.length,true);
+    cv.setUint16(28,name.length,true); cv.setUint32(42,offset,true);
+    cen.set(name,46); central.push(cen);
+    offset += local.length + data.length;
+  });
+  const cs = central.reduce((a,c)=>a+c.length,0);
+  const end = new Uint8Array(22), ev = new DataView(end.buffer);
+  ev.setUint32(0,0x06054b50,true); ev.setUint16(8,files.length,true); ev.setUint16(10,files.length,true);
+  ev.setUint32(12,cs,true); ev.setUint32(16,offset,true);
+  return new Blob([...parts,...central,end],{type:"application/zip"});
+}
+function downloadZip(files,name){
+  const url = URL.createObjectURL(makeZip(files));
+  const a = document.createElement("a"); a.href = url; a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1500);
+}
+
+/* ============================ BOOT ============================ */
+function bind(path,key){
+  onValue(ref(db,path), snap => {
+    const v = snap.val();
+    D[key] = key === "settings" ? {operatingPct:"40", ...obj(v)} : (v || {});
+    // don't let an incoming snapshot stomp a field someone is mid-typing
+    Object.entries(pending).forEach(([p,val]) => applyLocal(p,val));
+    render();
+  }, err => { S.err = err.message; render(); });
+}
+
+function bindAll(){
+  if (S.bound) return;
+  S.bound = true;
+  ["people","postings","jobs","assignments","costs","adjustments","kpi","settings","log","logins"]
+    .forEach(k=>bind(k,k));
+}
+
+/* If nobody has a login yet, write the seed so the first person can get in. */
+async function seedLogins(){
+  try {
+    const snap = await get(ref(db,"logins"));
+    if (snap.exists() && Object.keys(snap.val()||{}).length) return;
+    for (const l of SEED_LOGINS){
+      const id = push(ref(db,"logins")).key;
+      await set(ref(db,`logins/${id}`), { ...l, off:false });
+    }
+  } catch(e){ /* rules or connection — the sign-in screen will say so */ }
+}
+
+if (configured){
+  // Anonymous sign-in: nobody sees it, nobody manages it. It exists so the
+  // database rules can require auth != null instead of standing wide open.
+  try { const raw = sessionStorage.getItem("agp_me"); if (raw) S.me = JSON.parse(raw); } catch(e){}
+
+  onAuthStateChanged(auth, async user => {
+    S.ready = true;
+    if (user){
+      bindAll();          // logins have to be loaded before anyone can sign in
+      await seedLogins();
+    }
+    render();
+  });
+  signInAnonymously(auth).catch(e => {
+    S.ready = true;
+    S.err = "Couldn't reach the database. Turn on Anonymous sign-in under Authentication → Sign-in method.";
+    render();
+  });
+} else {
+  S.ready = true; render();
+}
+render();
+</script>
+</body>
+</html>
